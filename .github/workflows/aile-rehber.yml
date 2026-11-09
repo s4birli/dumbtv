@@ -1,0 +1,47 @@
+# Builds the family screen's TV guide (launcher/rehber/build.py) and publishes it as
+# aile-rehber.json on the "rehber" branch, which the TV reads once an hour. The schedule runs
+# from the default branch, so this file lives on main as well as on aile; a push to aile that
+# changes the channel list or the script rebuilds the guide at once.
+name: aile-rehber
+
+on:
+  schedule:
+    - cron: "17 */2 * * *"
+  push:
+    branches: [aile]
+    paths:
+      - launcher/aile-kanallar.json
+      - launcher/rehber/**
+      - .github/workflows/aile-rehber.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: aile-rehber
+  cancel-in-progress: false
+
+jobs:
+  rehber:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: aile
+      - name: Build the guide
+        run: |
+          mkdir -p out
+          python3 launcher/rehber/build.py launcher/aile-kanallar.json out/aile-rehber.json
+      - name: Publish on the rehber branch
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd out
+          git init -q -b rehber
+          git config user.name "aile-rehber"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add aile-rehber.json
+          git commit -q -m "TV rehberi $(date -u +%Y-%m-%dT%H:%MZ)"
+          git push -q -f "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" rehber
