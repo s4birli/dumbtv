@@ -3,6 +3,7 @@
 #   ./launcher/install.sh            download the release APK (checksum-verified), install, take over HOME
 #   ./launcher/install.sh --build    build from source instead (needs a JDK and the Android SDK)
 #   ./launcher/install.sh --undo     hand HOME back to Amazon's launcher
+#   ./launcher/install.sh --apk FILE install an APK built elsewhere (the family-screen fork's build)
 # Pick the device with ADB_SERIAL when more than one is connected.
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")"
@@ -27,7 +28,12 @@ case ${1:-} in
   "") ;;
   --build) mode=build ;;
   --undo) mode=undo ;;
-  *) echo "usage: $0 [--build | --undo]" >&2; exit 2 ;;
+  --apk)
+    mode=apk
+    APK=${2:-}
+    [[ -f $APK ]] || { echo "error: --apk needs an APK file (got '${APK}')" >&2; exit 2; }
+    ;;
+  *) echo "usage: $0 [--build | --undo | --apk FILE]" >&2; exit 2 ;;
 esac
 
 command -v "$ADB" >/dev/null || { echo "error: adb not found — install Android platform-tools" >&2; exit 1; }
@@ -99,6 +105,8 @@ install_apk() {
 
 if [[ $mode == build ]]; then
   build_apk
+elif [[ $mode == apk ]]; then
+  echo "installing $APK"
 else
   mkdir -p build
   APK=build/dumbtv-home-$VERSION.apk

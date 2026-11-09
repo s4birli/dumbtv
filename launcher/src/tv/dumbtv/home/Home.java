@@ -78,6 +78,8 @@ public final class Home extends Activity {
     private Meter meter;
     private Row apps, allApps, inputs;
     private Hero hero;
+    /** The family screen (this fork); null only if {@link Aile#ON} is switched off. */
+    private Aile aile;
     private int libraryGeneration;
     private Map<String, Long> recent = new HashMap<>();
     private Tile moving;
@@ -96,6 +98,10 @@ public final class Home extends Activity {
     private final BroadcastReceiver packages = new BroadcastReceiver() {
         @Override
         public void onReceive(Context c, Intent i) {
+            if (aile != null) {
+                aile.fill();
+                return;
+            }
             Uri data = i.getData();
             String changed = data == null ? null : data.getSchemeSpecificPart();
             if (changed != null) {
@@ -199,6 +205,19 @@ public final class Home extends Activity {
     @Override
     protected void onCreate(Bundle state) {
         super.onCreate(state);
+        if (Aile.ON) {
+            cfg = Config.get(this);
+            aile = new Aile(this);
+            setContentView(aile.build());
+            IntentFilter pf = new IntentFilter();
+            pf.addAction(Intent.ACTION_PACKAGE_ADDED);
+            pf.addAction(Intent.ACTION_PACKAGE_REMOVED);
+            pf.addAction(Intent.ACTION_PACKAGE_CHANGED);
+            pf.addDataScheme("package");
+            registerReceiver(packages, pf);
+            Keeper.start(this);
+            return;
+        }
         Future<List<Item>> catalog = io.submit(() -> Catalog.apps(this));
         cfg = Config.get(this);
         Future<Map<String, Long>> times = recentFor(Catalog.APPS) == null ? null
@@ -313,6 +332,14 @@ public final class Home extends Activity {
         resumed = true;
         Guard.arrived(this);
         Filter.wake(this);
+        if (aile != null) {
+            IntentFilter tf = new IntentFilter(Intent.ACTION_TIME_TICK);
+            tf.addAction(Intent.ACTION_TIME_CHANGED);
+            tf.addAction(Intent.ACTION_TIMEZONE_CHANGED);
+            registerReceiver(time, tf);
+            aile.resume();
+            return;
+        }
         cfg.refresh();
         cfg.visited();
         if (cfg.version() != applied) apply();
@@ -336,6 +363,10 @@ public final class Home extends Activity {
     protected void onPause() {
         super.onPause();
         resumed = false;
+        if (aile != null) {
+            unregisterReceiver(time);
+            return;
+        }
         hero.stop();
         stopColorAnimation();
         targetColor = 0;
@@ -372,13 +403,18 @@ public final class Home extends Activity {
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
+        if (aile != null) {
+            aile.focusFirst();
+            return;
+        }
         if (moving != null) stopMoving();
         if (resumed) focusFirst();
     }
 
     @Override
     public void onBackPressed() {
-        focusFirst();
+        if (aile != null) aile.focusFirst();
+        else focusFirst();
     }
 
     @Override
@@ -1138,6 +1174,10 @@ public final class Home extends Activity {
     }
 
     private void tick() {
+        if (aile != null) {
+            aile.tick();
+            return;
+        }
         String mode = cfg.get(Config.CLOCK);
         boolean h24 = "24h".equals(mode) || "auto".equals(mode) && DateFormat.is24HourFormat(this);
         Date now = new Date();
@@ -1225,7 +1265,7 @@ public final class Home extends Activity {
      * Guard then replaces with ours. The TV settings entry point opens the real settings screen,
      * except on Fire OS 6, where that page draws off the top of the screen: see FireSettings.
      */
-    private void openSettings() {
+    void openSettings() {
         Intent tvSettings = new Intent(Intent.ACTION_MAIN)
                 .addCategory("android.intent.category.LEANBACK_SETTINGS");
         if (FireSettings.applies(getPackageManager(), tvSettings)) {
@@ -1278,7 +1318,7 @@ public final class Home extends Activity {
         else launch(new Intent(t.item.intent), null);
     }
 
-    private void launch(Intent i, String pkg) {
+    void launch(Intent i, String pkg) {
         if (Guard.AMAZON.equals(pkg)) Guard.pause();
         try {
             // No transition: on a warm start of an app with a trampoline activity, such as
