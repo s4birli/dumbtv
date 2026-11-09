@@ -160,6 +160,9 @@ sh_ appops write-settings >/dev/null 2>&1 || true
 if [[ $dev_sdk -lt 28 ]]; then
   set_guard ""
   sh_ appops set $PKG GET_USAGE_STATS allow
+  # App-ops reach the disk lazily: a reboot soon after install dropped this grant on an AFTMM,
+  # and the Keeper then never saw Amazon's home come back. Write it now.
+  sh_ appops write-settings >/dev/null 2>&1 || true
   start_home $PKG/.Home
   sleep 3
   if ! grep -q 'isForeground=true' <<<"$(sh_ dumpsys activity services $PKG 2>/dev/null)"; then
