@@ -331,8 +331,16 @@ final class Aile {
         AileAyar.Link c = ayar.cocuk;
         Kart t = new Kart(home, Kart.SOLID, 0xFFF4C64E, px(32), px(6));
         t.setFocusScale(1.04f);
+        // The whole picture, never cropped; the space around it is a blurred, dimmed copy of it.
+        ImageView back = new ImageView(home);
+        back.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        t.addView(back, new FrameLayout.LayoutParams(MATCH, MATCH));
+        View dim = new View(home);
+        dim.setBackgroundColor(0x59000000);
+        dim.setVisibility(View.GONE);
+        t.addView(dim, new FrameLayout.LayoutParams(MATCH, MATCH));
         ImageView img = new ImageView(home);
-        img.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        img.setScaleType(ImageView.ScaleType.FIT_CENTER);
         t.addView(img, new FrameLayout.LayoutParams(MATCH, MATCH));
         String id = AileAyar.youtubeId(c.url);
         // The family's picture first; the stream's own covers if it cannot be had.
@@ -343,7 +351,10 @@ final class Aile {
             urls.add("https://i.ytimg.com/vi/" + id + "/maxresdefault.jpg");
             urls.add("https://i.ytimg.com/vi/" + id + "/hqdefault_live.jpg");
         }
-        Resim.load(img, urls.toArray(new String[0]), px(470), px(560), 6 * 60 * 60 * 1000L);
+        Resim.load(img, urls.toArray(new String[0]), px(470), px(560), 6 * 60 * 60 * 1000L, b -> {
+            back.setImageBitmap(Resim.bulanik(b));
+            dim.setVisibility(View.VISIBLE);
+        });
 
         if (c.yazi) {
             // A shade from the bottom, so white text reads on any picture.

@@ -49,6 +49,15 @@ final class Resim {
      * shows meanwhile, and stays if the fetch fails).
      */
     static void load(ImageView view, String[] urls, int wPx, int hPx, long maxAge) {
+        load(view, urls, wPx, hPx, maxAge, null);
+    }
+
+    /** Told on the main thread when a picture is shown, for a backdrop made from it. */
+    interface Hazir {
+        void hazir(Bitmap b);
+    }
+
+    static void load(ImageView view, String[] urls, int wPx, int hPx, long maxAge, Hazir done) {
         java.util.List<String> ok = new java.util.ArrayList<>();
         for (String u : urls) {
             if (u != null && (u.startsWith("https://") || u.startsWith("http://"))) ok.add(u);
@@ -60,6 +69,7 @@ final class Resim {
             Bitmap hit = MEMORY.get(url + "@" + wPx + "x" + hPx);
             if (hit != null) {
                 view.setImageBitmap(hit);
+                if (done != null) done.hazir(hit);
                 return;
             }
         }
@@ -70,12 +80,12 @@ final class Resim {
                 File f = file(app, url);
                 boolean fresh = f.isFile() && System.currentTimeMillis() - f.lastModified() < maxAge;
                 Bitmap b = f.isFile() ? decode(f, wPx, hPx) : null;
-                if (b != null) show(view, tag, key, b);
+                if (b != null) show(view, tag, key, b, done);
                 if (fresh && b != null) return;
                 if (fetch(url, f)) {
                     Bitmap nb = decode(f, wPx, hPx);
                     if (nb != null) {
-                        show(view, tag, key, nb);
+                        show(view, tag, key, nb, done);
                         return;
                     }
                 }
@@ -85,11 +95,20 @@ final class Resim {
         });
     }
 
-    private static void show(ImageView view, String tag, String key, Bitmap b) {
+    private static void show(ImageView view, String tag, String key, Bitmap b, Hazir done) {
         MEMORY.put(key, b);
         MAIN.post(() -> {
-            if (tag.equals(view.getTag())) view.setImageBitmap(b);
+            if (!tag.equals(view.getTag())) return;
+            view.setImageBitmap(b);
+            if (done != null) done.hazir(b);
         });
+    }
+
+    /** A soft, blurred copy: shrunk to a few pixels and drawn large, for behind a picture. */
+    static Bitmap bulanik(Bitmap b) {
+        int w = 16, h = Math.max(1, Math.round(16f * b.getHeight() / Math.max(1, b.getWidth())));
+        Bitmap tiny = Bitmap.createScaledBitmap(b, w, h, true);
+        return Bitmap.createScaledBitmap(tiny, w * 4, h * 4, true);
     }
 
     private static File file(Context c, String url) {

@@ -6,13 +6,16 @@ This fork replaces dumbtv home's grid with one fixed family screen, built for a 
 The main screen has three big tiles and a row of apps:
 
 - **Canlı TV**: what is on now on the first four channels. It opens the channel list, grouped
-  as Türk kanalları (TRT 1, Kanal D, ATV, Show TV, NOW, TV8), İngiliz kanalları (BBC One and
-  Two, ITV1, Channel 4, Channel 5) and Film kanalları (24 saat: MovieSphere, MyTime Movies,
-  Artflix Classics). Each row shows its logo, the programme on air with its hours and how far
+  as Türk kanalları (TRT 1, Kanal D, ATV, Show TV, NOW, TV8), İngiliz kanalları (BBC One South,
+  BBC Two, Three, Four, News and CBeebies from the BBC's own UK streams; ITV1, Channel 4 and
+  Channel 5 in their apps) and Film kanalları (24 saat: MovieSphere, MyTime Movies, GREAT!
+  movies, Artflix Classics). Other UK channels in Kodi's iptv-org list come from third-party
+  restreams, not the broadcasters, and are left out. Each row shows its logo, the programme on air with its hours and how far
   it has run; the panel on the right shows now and next for the focused channel. A stream opens
   in Kodi, a YouTube live link in SmartTube, and a UK channel in its broadcaster's own app (BBC
   iPlayer, ITVX, Channel 4, 5), whose row only shows once that app is installed.
-- **Ms Rachel**: the children's live stream in SmartTube, with the stream's own YouTube cover.
+- **Ms Rachel**: the children's live stream in SmartTube. The tile shows the whole picture (the
+  stream's own YouTube cover, or one set with `kapak`) over a blurred copy of itself.
 - **Eski Türk Filmleri**: full Yeşilçam comedies from the production companies' own YouTube
   channels (Arzu Film, Erler Film, Sistem Film), most watched first, opened in SmartTube.
 - **Uygulamalar**: Netflix, Prime Video, Disney+, YouTube (SmartTube) and İnternet (Silk, Fire

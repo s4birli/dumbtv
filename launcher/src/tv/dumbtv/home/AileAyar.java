@@ -158,12 +158,21 @@ final class AileAyar {
                 .logo(wm + "commons/thumb/d/db/NOW_TV_%28Turkey%29_wordmark-red.svg/960px-NOW_TV_%28Turkey%29_wordmark-red.svg.png", false));
         a.kanallar.add(new Kanal("TV8", "https://tv8.daioncdn.net/tv8/tv8.m3u8?app=7ddc255a-ef47-4e81-ab14-c0e5f2949788&ce=3")
                 .logo(wm + "tr/thumb/6/68/Tv8_Yeni_Logo.png/960px-Tv8_Yeni_Logo.png", false));
-        a.kanallar.add(new Kanal("BBC One", "https://www.bbc.co.uk/iplayer/live/bbcone").grup(uk)
-                .app("BBC iPlayer", "bbc.iplayer.android", "uk.co.bbc.iplayer")
+        // The BBC's own UK streams (they answer only in the UK), in Kodi. BBC One is the South
+        // edition, Reading's local news.
+        String bbc = "https://vs-hls-push%s-uk-live.akamaized.net/x=4/i=urn:bbc:pips:service:%s/pc_hd_abr_v2.m3u8";
+        a.kanallar.add(new Kanal("BBC One", String.format(bbc, "b", "bbc_one_south")).grup(uk)
                 .logo(wm + "commons/thumb/8/8b/BBC_One_logo_2021.svg/960px-BBC_One_logo_2021.svg.png", false));
-        a.kanallar.add(new Kanal("BBC Two", "https://www.bbc.co.uk/iplayer/live/bbctwo").grup(uk)
-                .app("BBC iPlayer", "bbc.iplayer.android", "uk.co.bbc.iplayer")
+        a.kanallar.add(new Kanal("BBC Two", String.format(bbc, "", "bbc_two_hd")).grup(uk)
                 .logo(wm + "commons/thumb/1/15/BBC_Two_logo_2021.svg/960px-BBC_Two_logo_2021.svg.png", false));
+        a.kanallar.add(new Kanal("BBC Three", String.format(bbc, "b", "bbc_three_hd")).grup(uk)
+                .logo(wm + "commons/thumb/7/76/BBC_Three_2022.svg/960px-BBC_Three_2022.svg.png", false));
+        a.kanallar.add(new Kanal("BBC Four", String.format(bbc, "b", "bbc_four_hd")).grup(uk)
+                .logo(wm + "commons/thumb/6/6d/BBC_Four_logo_2021.svg/960px-BBC_Four_logo_2021.svg.png", false));
+        a.kanallar.add(new Kanal("BBC News", String.format(bbc, "", "bbc_news_channel_hd")).grup(uk)
+                .logo(wm + "commons/thumb/6/62/BBC_News_2019.svg/960px-BBC_News_2019.svg.png", false));
+        a.kanallar.add(new Kanal("CBeebies", String.format(bbc, "b", "cbeebies_hd")).grup(uk)
+                .logo(wm + "commons/thumb/b/b5/CBeebies_2023.svg/960px-CBeebies_2023.svg.png", true));
         a.kanallar.add(new Kanal("ITV1", "").grup(uk).app("ITVX", "air.ITVMobilePlayer", "com.itv.itvx")
                 .logo(wm + "commons/thumb/e/e8/ITV1_Logo_2022.svg/960px-ITV1_Logo_2022.svg.png", false));
         a.kanallar.add(new Kanal("Channel 4", "").grup(uk).app("Channel 4", "com.channel4.ondemand")
@@ -172,6 +181,7 @@ final class AileAyar {
                 .logo("https://d2n0069hmnqmmx.cloudfront.net/epgdata/1.0/newchanlogos/512/512/skychb1800.png", true));
         a.kanallar.add(new Kanal("MovieSphere", "https://moviesphereuk-samsunguk.amagi.tv/playlist.m3u8").grup(film));
         a.kanallar.add(new Kanal("MyTime Movies", "https://appletree-mytimeuk-rakuten.amagi.tv/playlist.m3u8").grup(film));
+        a.kanallar.add(new Kanal("GREAT! movies", "https://amg01753-narrativeuk-amg01753c3-lg-gb-1833.playouts.now.amagi.tv/playlist/amg01753-narrativeuk-greatmovies-lggb/playlist.m3u8").grup(film));
         a.kanallar.add(new Kanal("Artflix Classics", "https://amogonetworx-artflix-1-nl.samsung.wurl.tv/playlist.m3u8").grup(film));
         // The live stream the family watches. A live video's id can change when the stream
         // restarts: then put the new link in aile.json ("cocuk": {"url": ...}).
