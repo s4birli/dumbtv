@@ -171,14 +171,35 @@ final class AileAyar {
                 .logo(wm + "commons/thumb/6/6d/BBC_Four_logo_2021.svg/960px-BBC_Four_logo_2021.svg.png", false));
         a.kanallar.add(new Kanal("BBC News", String.format(bbc, "", "bbc_news_channel_hd")).grup(uk)
                 .logo(wm + "commons/thumb/6/62/BBC_News_2019.svg/960px-BBC_News_2019.svg.png", false));
-        a.kanallar.add(new Kanal("CBeebies", String.format(bbc, "b", "cbeebies_hd")).grup(uk)
-                .logo(wm + "commons/thumb/b/b5/CBeebies_2023.svg/960px-CBeebies_2023.svg.png", true));
         a.kanallar.add(new Kanal("ITV1", "").grup(uk).app("ITVX", "air.ITVMobilePlayer", "com.itv.itvx")
                 .logo(wm + "commons/thumb/e/e8/ITV1_Logo_2022.svg/960px-ITV1_Logo_2022.svg.png", false));
         a.kanallar.add(new Kanal("Channel 4", "").grup(uk).app("Channel 4", "com.channel4.ondemand")
                 .logo("https://d2n0069hmnqmmx.cloudfront.net/epgdata/1.0/newchanlogos/512/512/skychb1621.png", true));
         a.kanallar.add(new Kanal("Channel 5", "").grup(uk).app("5", "com.channel5.my5", "uk.co.channel5.my5")
                 .logo("https://d2n0069hmnqmmx.cloudfront.net/epgdata/1.0/newchanlogos/512/512/skychb1800.png", true));
+        // Free channels the broadcasters themselves stream (BBC, and FAST channels on Amagi
+        // and Wurl, the feeds of Samsung TV Plus, LG Channels and Rakuten TV).
+        String kids = "Çocuk kanalları", fun = "Eğlence ve belgesel";
+        a.kanallar.add(new Kanal("CBeebies", String.format(bbc, "b", "cbeebies_hd")).grup(kids)
+                .logo(wm + "commons/thumb/b/b5/CBeebies_2023.svg/960px-CBeebies_2023.svg.png", true));
+        a.kanallar.add(new Kanal("CBBC", "https://vs-hls-pushb-uk-live.akamaized.net/x=4/i=urn:bbc:pips:service:cbbc_hd/pc_hd_abr_v2.m3u8").grup(kids)
+                .logo("https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/CBBC_%282023%29.svg/960px-CBBC_%282023%29.svg.png", true));
+        a.kanallar.add(new Kanal("Tiny Pop", "https://amg01753-narrativeuk-amg01753c1-lg-gb-1830.playouts.now.amagi.tv/playlist/amg01753-narrativeuk-tinypop-lggb/playlist.m3u8").grup(kids)
+                .logo("https://upload.wikimedia.org/wikipedia/commons/0/02/New_Tiny_Pop_Logo_2018.png", false));
+        a.kanallar.add(new Kanal("Pop", "https://amg01753-narrativeentert-popkids-lggb-xyy5k.amagi.tv/ts-eu-w1-n2/playlist/amg01753-narrativeentert-popkids-lggb/playlist.m3u8").grup(kids));
+        a.kanallar.add(new Kanal("Moonbug Kids", "https://moonbug-rokuus.amagi.tv/playlist.m3u8").grup(kids)
+                .logo("https://upload.wikimedia.org/wikipedia/commons/thumb/7/73/Moonbug_Kids.svg/960px-Moonbug_Kids.svg.png", false));
+        a.kanallar.add(new Kanal("Mr Bean çizgi", "https://amg00627-amg00627c23-samsung-au-4110.playouts.now.amagi.tv/playlist.m3u8").grup(kids)
+                .logo("https://d2yv6y0n3qsl5c.cloudfront.net/MBEANP/MrBeanLiveAction-LG_LOGO_800x200.png", true));
+        a.kanallar.add(new Kanal("Mr Bean", "https://amg00627-amg00627c39-samsung-gb-5569.playouts.now.amagi.tv/playlist.m3u8").grup(fun)
+                .logo("https://d2yv6y0n3qsl5c.cloudfront.net/MBEANP/MrBeanLiveAction-LG_LOGO_800x200.png", true));
+        a.kanallar.add(new Kanal("Graham Norton", "https://amg00654-itv-amg00654c35-rakuten-gb-7598.playouts.now.amagi.tv/playlist.m3u8").grup(fun)
+                .logo("https://image.tmdb.org/t/p/w500/xZkWYamzlT6nFu9MI2Rr6NkjedX.png", true));
+        a.kanallar.add(new Kanal("Hell's Kitchen", "https://amg00654-itv-amg00654c1-samsung-au-1072.playouts.now.amagi.tv/itv-hellskitchen-samsung/playlist.m3u8").grup(fun));
+        a.kanallar.add(new Kanal("Homes Under the Hammer", "https://all3media-homes-under-the-hammer-1-au.samsung.wurl.tv/playlist.m3u8").grup(fun));
+        a.kanallar.add(new Kanal("NatureTime", "https://amg01515-amg01515c43-samsung-gb-9038.playouts.now.amagi.tv/playlist.m3u8").grup(fun));
+        a.kanallar.add(new Kanal("Tastemade", "https://tastemade-tdint-rakuten.amagi.tv/playlist.m3u8").grup(fun)
+                .logo("https://upload.wikimedia.org/wikipedia/commons/thumb/b/bc/TastemadeLogo.svg/960px-TastemadeLogo.svg.png", false));
         a.kanallar.add(new Kanal("MovieSphere", "https://moviesphereuk-samsunguk.amagi.tv/playlist.m3u8").grup(film));
         a.kanallar.add(new Kanal("MyTime Movies", "https://appletree-mytimeuk-rakuten.amagi.tv/playlist.m3u8").grup(film));
         a.kanallar.add(new Kanal("GREAT! movies", "https://amg01753-narrativeuk-amg01753c3-lg-gb-1833.playouts.now.amagi.tv/playlist/amg01753-narrativeuk-greatmovies-lggb/playlist.m3u8").grup(film));

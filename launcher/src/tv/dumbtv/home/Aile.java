@@ -612,7 +612,7 @@ final class Aile {
             TextView name = text(34, 0xFFFFFFFF, BOLD);
             name.setText(k.ad);
             name.setEllipsize(android.text.TextUtils.TruncateAt.END);
-            LinearLayout.LayoutParams nl = new LinearLayout.LayoutParams(px(230), WRAP);
+            LinearLayout.LayoutParams nl = new LinearLayout.LayoutParams(px(300), WRAP);
             nl.leftMargin = px(24);
             line.addView(name, nl);
             kart.setTitle(name);
