@@ -147,6 +147,8 @@ public final class Keeper extends Service {
 
     private void launch(long now) {
         lastLaunch = now;
+        // HOME: the family screen opens on its main page, not on a list left open.
+        Aile.homePressed = true;
         ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
         if (manager != null) {
             try {

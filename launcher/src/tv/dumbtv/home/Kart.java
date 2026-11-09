@@ -27,7 +27,11 @@ final class Kart extends FrameLayout {
     private final GradientDrawable card = new GradientDrawable();
     private final GradientDrawable ring = new GradientDrawable();
     private GradientDrawable badgeBg;
-    private TextView title, sub;
+    private final java.util.List<TextView> titles = new java.util.ArrayList<>();
+    private final java.util.List<TextView> subs = new java.util.ArrayList<>();
+    private final java.util.List<GradientDrawable> chips = new java.util.ArrayList<>();
+    private float focusScale = FOCUS_SCALE;
+    private Odak odak;
     private ImageView icon;
     private int glass = 0x1AFFFFFF;
     private final int solid;
@@ -50,14 +54,36 @@ final class Kart extends FrameLayout {
         paint(false);
     }
 
+    /** Text that turns ink on the white focused card. Several may be added. */
     void setTitle(TextView t) {
-        title = t;
+        titles.add(t);
         paint(isFocused());
     }
 
+    /** Secondary text, grey on the white focused card. Several may be added. */
     void setSub(TextView t) {
-        sub = t;
+        subs.add(t);
         paint(isFocused());
+    }
+
+    /** A light chip (a logo's backdrop) that stays visible on the white focused card. */
+    void addChip(GradientDrawable d) {
+        chips.add(d);
+        paint(isFocused());
+    }
+
+    /** List rows grow less than tiles: 2 percent instead of 8. */
+    void setFocusScale(float s) {
+        focusScale = s;
+    }
+
+    /** Told when the tile gains or loses the focus, after it has repainted. */
+    interface Odak {
+        void changed(boolean has);
+    }
+
+    void setOdak(Odak o) {
+        odak = o;
     }
 
     void setIcon(ImageView i) {
@@ -77,9 +103,10 @@ final class Kart extends FrameLayout {
     }
 
     private void focus(boolean has) {
-        animate().scaleX(has ? FOCUS_SCALE : 1f).scaleY(has ? FOCUS_SCALE : 1f)
+        animate().scaleX(has ? focusScale : 1f).scaleY(has ? focusScale : 1f)
                 .translationZ(has ? radius : 0).setDuration(150).start();
         paint(has);
+        if (odak != null) odak.changed(has);
     }
 
     private void paint(boolean focused) {
@@ -87,8 +114,9 @@ final class Kart extends FrameLayout {
             card.setColor(focused ? WHITE : glass);
             card.setStroke(1, focused ? WHITE : 0x29FFFFFF);
             setForeground(null);
-            if (title != null) title.setTextColor(focused ? INK : WHITE);
-            if (sub != null) sub.setTextColor(focused ? 0xFF3A3F4A : 0xFFC9CEDA);
+            for (TextView t : titles) t.setTextColor(focused ? INK : WHITE);
+            for (TextView t : subs) t.setTextColor(focused ? 0xFF3A3F4A : 0xFFC9CEDA);
+            for (GradientDrawable d : chips) d.setStroke(1, focused ? 0x26000000 : 0);
             if (icon != null) icon.setImageTintList(ColorStateList.valueOf(focused ? INK : WHITE));
             if (badgeBg != null) badgeBg.setColor(focused ? INK : 0x59000000);
         } else {

@@ -3,13 +3,25 @@
 This fork replaces dumbtv home's grid with one fixed family screen, built for a Fire TV Stick 4K
 (1st gen, Fire OS 6.7) used by a grandmother and small children:
 
-- **Canlı TV**: live Turkish channels (TRT 1, Kanal D, ATV, Show, TV8), each opened in Kodi as a
-  stream, or in SmartTube when the address is a YouTube live link.
-- **Çocuklar için**: one big tile that opens a YouTube channel or live stream in SmartTube.
-- **Ev**: the Blink cameras and Alexa, when installed.
-- **Uygulamalar**: Netflix, Prime Video, Disney+, YouTube (SmartTube), Kodi and İnternet (Silk,
-  Fire TV's own browser), each shown with the app's own TV banner. Five fit at 320 x 180; a sixth
-  shrinks the row to fit.
+The main screen has three big tiles and a row of apps:
+
+- **Canlı TV**: what is on now on the first four channels. It opens the channel list, grouped
+  as Türk kanalları (TRT 1, Kanal D, ATV, Show TV, NOW, TV8), İngiliz kanalları (BBC One and
+  Two, ITV1, Channel 4, Channel 5) and Film kanalları (24 saat: MovieSphere, MyTime Movies,
+  Artflix Classics). Each row shows its logo, the programme on air with its hours and how far
+  it has run; the panel on the right shows now and next for the focused channel. A stream opens
+  in Kodi, a YouTube live link in SmartTube, and a UK channel in its broadcaster's own app (BBC
+  iPlayer, ITVX, Channel 4, 5), whose row only shows once that app is installed.
+- **Ms Rachel**: the children's live stream in SmartTube, with the stream's own YouTube cover.
+- **Eski Türk Filmleri**: full Yeşilçam comedies from the production companies' own YouTube
+  channels (Arzu Film, Erler Film, Sistem Film), most watched first, opened in SmartTube.
+- **Uygulamalar**: Netflix, Prime Video, Disney+, YouTube (SmartTube) and İnternet (Silk, Fire
+  TV's own browser), each shown with the app's own TV banner.
+- **Header**: clock and date, then Surfshark, Kodi and Ayarlar, which are used rarely.
+
+Back on a list returns to the main screen; HOME always does. Coming back from a channel or a
+film opened in a list returns to that list, where the remote left it.
+
 - **Surfshark** (header pill): Android runs one VPN at a time, and Surfshark refuses to connect
   while the DNS filter's VPN is up ("Another VPN was detected"). The pill closes the filter the
   way its own CLOSE button does (its screen started with `SHOULD_FINISH`), waits for its VPN to
@@ -37,19 +49,33 @@ Keep `launcher/release.keystore`: every later update must be signed with the sam
 The TV reads `launcher/aile-kanallar.json` from this branch on GitHub (raw.githubusercontent.com)
 at most every 10 minutes, on HOME and while the screen is up, and keeps the last good copy for
 when it is offline. Edit that file and push: the TV picks it up without adb. Only the channels
-and the children's tile can change this way, never which apps the screen launches. Up to six
-channels fit; more than four share the row.
+and the children's tile can change this way, never which apps the screen launches. A channel
+has `ad`, `url` and optionally `grup` (its heading in the list), `logo` (a picture address),
+`"logoZemin": "koyu"` for a white logo, `rehber` (its name in the guide), and, for a channel
+watched in an app, `uygulama` and `paket` (the app's package names; the first installed wins).
+The children's tile takes an optional `kapak`: a picture address shown instead of the stream's
+own cover.
+
+## Eski Türk Filmleri
+
+`launcher/filmler/build.py` lists the full films (an hour or longer, before 1995) that Arzu Film,
+Erler Film and Sistem Film publish on their own YouTube channels, keeps the comedies (a comedy
+cast or a known comedy title), drops trailers, clips and compilations, and orders them by views.
+The `aile-filmler` workflow runs it on the 3rd of each month and publishes `aile-filmler.json`
+on the `filmler` branch; the TV reads it twice a day and keeps the last copy. If YouTube turns
+GitHub's runner away the run fails and the TV keeps the old list; run the script on a Mac then
+(`pip install yt-dlp`) and push the file to the `filmler` branch by hand.
 
 ## What is on now
 
-Each channel tile shows the programme on air under its name. `launcher/rehber/build.py` takes
+The Canlı TV tile and the channel list show the programme on air. `launcher/rehber/build.py` takes
 the day's schedule from Türksat Kablo's public EPG files, and the `aile-rehber` GitHub Actions
 workflow runs it every two hours (and on any push that changes the channel list) and publishes
 `aile-rehber.json` on the `rehber` branch. The TV reads that once an hour and keeps the last
 copy. Each programme carries its start and end, so a stale copy shows nothing rather than a
 wrong title. A channel whose guide name differs from its tile name sets `"rehber"` in
 `aile-kanallar.json`. GitHub turns off scheduled workflows in a public repository after 60 days
-without activity; re-enable it in the Actions tab if the line under the channels disappears.
+without activity; re-enable it (and aile-filmler) in the Actions tab if the programmes disappear.
 
 ## Changing a channel without a new build (on the device)
 

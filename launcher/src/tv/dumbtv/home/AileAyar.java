@@ -40,10 +40,39 @@ final class AileAyar {
         final String ad, url;
         /** The channel's name in the TV guide when it differs from {@link #ad}; else null. */
         String rehber;
+        /** The list heading it sits under. */
+        String grup = "Türk kanalları";
+        /** A picture of the channel's logo, and whether that logo is light (shown on dark). */
+        String logo;
+        boolean logoKoyu;
+        /** For a channel watched in its broadcaster's app: the app (first installed wins). */
+        String[] paket;
+        String uygulama;
 
         Kanal(String ad, String url) {
             this.ad = ad;
             this.url = url;
+        }
+
+        boolean app() {
+            return paket != null && paket.length > 0;
+        }
+
+        Kanal grup(String g) {
+            grup = g;
+            return this;
+        }
+
+        Kanal logo(String l, boolean koyu) {
+            logo = l;
+            logoKoyu = koyu;
+            return this;
+        }
+
+        Kanal app(String name, String... pkgs) {
+            uygulama = name;
+            paket = pkgs;
+            return this;
         }
     }
 
@@ -52,6 +81,10 @@ final class AileAyar {
         final String ad, alt, url;
         final String[] paketler;
         final boolean canli;
+        /** A picture for the tile chosen by the family ("kapak"); else the video's own cover. */
+        String kapak;
+        /** "yazi": false shows the picture alone, without the name over it. */
+        boolean yazi = true;
 
         Link(String ad, String alt, String url, String[] paketler, boolean canli) {
             this.ad = ad;
@@ -97,15 +130,49 @@ final class AileAyar {
         return url.contains("youtube.com/") || url.contains("youtu.be/");
     }
 
+    /** The 11 character video id of a YouTube link, or null. */
+    static String youtubeId(String url) {
+        java.util.regex.Matcher m = java.util.regex.Pattern
+                .compile("(?:v=|youtu\\.be/|/live/|/embed/)([A-Za-z0-9_-]{11})").matcher(url);
+        return m.find() ? m.group(1) : null;
+    }
+
     static AileAyar defaults() {
         AileAyar a = new AileAyar();
-        a.kanallar.add(new Kanal("TRT 1", "https://tv-trt1.medya.trt.com.tr/master.m3u8"));
-        a.kanallar.add(new Kanal("Kanal D", "https://demiroren.daioncdn.net/kanald/kanald.m3u8?app=kanald_web&ce=3"));
+        // Built-in copy of launcher/aile-kanallar.json, for the first start before it is fetched.
+        String tr = "Türk kanalları", uk = "İngiliz kanalları", film = "Film kanalları (24 saat)";
+        String wm = "https://upload.wikimedia.org/wikipedia/";
+        a.kanallar.add(new Kanal("TRT 1", "https://tv-trt1.medya.trt.com.tr/master.m3u8")
+                .logo(wm + "commons/thumb/8/85/TRT_1_logo_%282021-%29.svg/960px-TRT_1_logo_%282021-%29.svg.png", false));
+        a.kanallar.add(new Kanal("Kanal D", "https://demiroren.daioncdn.net/kanald/kanald.m3u8?app=kanald_web&ce=3")
+                .logo("https://static.kanald.com.tr/images/kanald-logo-250x60.png", true));
         // 720p: the 1080p playlist of this CDN times out about every other request.
-        a.kanallar.add(new Kanal("ATV", "https://rnttwmjcin.turknet.ercdn.net/lcpmvefbyo/atv/atv_720p.m3u8"));
+        a.kanallar.add(new Kanal("ATV", "https://rnttwmjcin.turknet.ercdn.net/lcpmvefbyo/atv/atv_720p.m3u8")
+                .logo(wm + "commons/thumb/4/45/Atv_logo_2010.svg/960px-Atv_logo_2010.svg.png", false));
         // Show has no public stream address that works; the family uses this YouTube live link.
-        a.kanallar.add(new Kanal("Show", "https://www.youtube.com/watch?v=WxeHEn5N1vk"));
-        a.kanallar.add(new Kanal("TV8", "https://tv8.daioncdn.net/tv8/tv8.m3u8?app=7ddc255a-ef47-4e81-ab14-c0e5f2949788&ce=3"));
+        Kanal show = new Kanal("Show TV", "https://www.youtube.com/watch?v=WxeHEn5N1vk")
+                .logo(wm + "commons/thumb/c/cb/Show_TV_logo.svg/960px-Show_TV_logo.svg.png", false);
+        show.rehber = "Show";
+        a.kanallar.add(show);
+        a.kanallar.add(new Kanal("NOW", "https://uycyyuuzyh.turknet.ercdn.net/nphindgytw/nowtv/nowtv.m3u8")
+                .logo(wm + "commons/thumb/d/db/NOW_TV_%28Turkey%29_wordmark-red.svg/960px-NOW_TV_%28Turkey%29_wordmark-red.svg.png", false));
+        a.kanallar.add(new Kanal("TV8", "https://tv8.daioncdn.net/tv8/tv8.m3u8?app=7ddc255a-ef47-4e81-ab14-c0e5f2949788&ce=3")
+                .logo(wm + "tr/thumb/6/68/Tv8_Yeni_Logo.png/960px-Tv8_Yeni_Logo.png", false));
+        a.kanallar.add(new Kanal("BBC One", "https://www.bbc.co.uk/iplayer/live/bbcone").grup(uk)
+                .app("BBC iPlayer", "bbc.iplayer.android", "uk.co.bbc.iplayer")
+                .logo(wm + "commons/thumb/8/8b/BBC_One_logo_2021.svg/960px-BBC_One_logo_2021.svg.png", false));
+        a.kanallar.add(new Kanal("BBC Two", "https://www.bbc.co.uk/iplayer/live/bbctwo").grup(uk)
+                .app("BBC iPlayer", "bbc.iplayer.android", "uk.co.bbc.iplayer")
+                .logo(wm + "commons/thumb/1/15/BBC_Two_logo_2021.svg/960px-BBC_Two_logo_2021.svg.png", false));
+        a.kanallar.add(new Kanal("ITV1", "").grup(uk).app("ITVX", "air.ITVMobilePlayer", "com.itv.itvx")
+                .logo(wm + "commons/thumb/e/e8/ITV1_Logo_2022.svg/960px-ITV1_Logo_2022.svg.png", false));
+        a.kanallar.add(new Kanal("Channel 4", "").grup(uk).app("Channel 4", "com.channel4.ondemand")
+                .logo("https://d2n0069hmnqmmx.cloudfront.net/epgdata/1.0/newchanlogos/512/512/skychb1621.png", true));
+        a.kanallar.add(new Kanal("Channel 5", "").grup(uk).app("5", "com.channel5.my5", "uk.co.channel5.my5")
+                .logo("https://d2n0069hmnqmmx.cloudfront.net/epgdata/1.0/newchanlogos/512/512/skychb1800.png", true));
+        a.kanallar.add(new Kanal("MovieSphere", "https://moviesphereuk-samsunguk.amagi.tv/playlist.m3u8").grup(film));
+        a.kanallar.add(new Kanal("MyTime Movies", "https://appletree-mytimeuk-rakuten.amagi.tv/playlist.m3u8").grup(film));
+        a.kanallar.add(new Kanal("Artflix Classics", "https://amogonetworx-artflix-1-nl.samsung.wurl.tv/playlist.m3u8").grup(film));
         // The live stream the family watches. A live video's id can change when the stream
         // restarts: then put the new link in aile.json ("cocuk": {"url": ...}).
         a.cocuk = new Link("Ms Rachel", "Canlı yayın · YouTube",
@@ -121,7 +188,6 @@ final class AileAyar {
         // SmartTube opens it, but the tile shows the official app's YouTube banner, which the
         // family knows. The official app stays installed for that (and as a fallback).
         a.uygulamalar.add(new Uygulama("YouTube", null, YOUTUBE).logo("com.amazon.firetv.youtube"));
-        a.uygulamalar.add(new Uygulama("Kodi", null, new String[] {KODI}));
         // Fire TV's own browser: Chrome has no Fire TV build, and its phone build needs a mouse.
         a.uygulamalar.add(new Uygulama("İnternet", null, new String[] {"com.amazon.cloud9"}));
         a.surfshark = new String[] {"com.surfshark.vpnclient.android"};
@@ -154,22 +220,17 @@ final class AileAyar {
     }
 
     /**
-     * The fetched list may change only what a channel or the children's tile opens: never which
-     * apps run. Entries without a web address are skipped; an empty list keeps the current one.
+     * The fetched list may change only the channels and the children's tile. A channel may name
+     * its broadcaster's app; it shows only once that app is installed. Broken entries are
+     * skipped; an empty list keeps the current one.
      */
     private void applyUzak(JSONObject o) throws JSONException {
         if (o.has("kanallar")) {
             List<Kanal> list = new ArrayList<>();
             JSONArray arr = o.getJSONArray("kanallar");
             for (int i = 0; i < arr.length(); i++) {
-                JSONObject k = arr.optJSONObject(i);
-                if (k == null) continue;
-                String ad = k.optString("ad", "").trim(), url = k.optString("url", "").trim();
-                if (ad.isEmpty() || !web(url)) continue;
-                Kanal kanal = new Kanal(ad, url);
-                String r = k.optString("rehber", "").trim();
-                if (!r.isEmpty()) kanal.rehber = r;
-                list.add(kanal);
+                Kanal kanal = kanal(arr.optJSONObject(i));
+                if (kanal != null) list.add(kanal);
             }
             if (!list.isEmpty()) {
                 kanallar.clear();
@@ -180,8 +241,12 @@ final class AileAyar {
         if (k != null) {
             String url = k.optString("url", cocuk.url).trim();
             if (web(url)) {
-                cocuk = new Link(k.optString("ad", cocuk.ad), k.optString("alt", cocuk.alt), url,
-                        cocuk.paketler, k.optBoolean("canli", cocuk.canli));
+                Link old = cocuk;
+                cocuk = new Link(k.optString("ad", old.ad), k.optString("alt", old.alt), url,
+                        old.paketler, k.optBoolean("canli", old.canli));
+                String yeni = k.optString("kapak", "").trim();
+                cocuk.kapak = web(yeni) ? yeni : old.kapak;
+                cocuk.yazi = k.optBoolean("yazi", old.yazi);
             }
         }
     }
@@ -190,24 +255,51 @@ final class AileAyar {
         return url.startsWith("https://") || url.startsWith("http://");
     }
 
+    /**
+     * One channel of a list. A stream or YouTube channel needs its web address; a channel
+     * watched in its broadcaster's app needs the app's package names (its address, a page of
+     * that app, is optional). Anything else is skipped.
+     */
+    private static Kanal kanal(JSONObject k) throws JSONException {
+        if (k == null) return null;
+        String ad = k.optString("ad", "").trim(), url = k.optString("url", "").trim();
+        JSONArray paket = k.optJSONArray("paket");
+        boolean app = paket != null && paket.length() > 0;
+        if (ad.isEmpty() || (!app && !web(url)) || (!url.isEmpty() && !web(url))) return null;
+        Kanal kanal = new Kanal(ad, url);
+        String r = k.optString("rehber", "").trim();
+        if (!r.isEmpty()) kanal.rehber = r;
+        String g = k.optString("grup", "").trim();
+        if (!g.isEmpty()) kanal.grup = g;
+        String logo = k.optString("logo", "").trim();
+        if (web(logo)) kanal.logo = logo;
+        kanal.logoKoyu = "koyu".equals(k.optString("logoZemin", ""));
+        if (app) {
+            kanal.paket = strings(paket);
+            kanal.uygulama = k.optString("uygulama", ad);
+        }
+        return kanal;
+    }
+
     private void apply(JSONObject o) throws JSONException {
         if (o.has("kanallar")) {
             kanallar.clear();
             JSONArray arr = o.getJSONArray("kanallar");
             for (int i = 0; i < arr.length(); i++) {
-                JSONObject k = arr.getJSONObject(i);
-                Kanal kanal = new Kanal(k.getString("ad"), k.getString("url"));
-                String r = k.optString("rehber", "").trim();
-                if (!r.isEmpty()) kanal.rehber = r;
-                kanallar.add(kanal);
+                Kanal kanal = kanal(arr.optJSONObject(i));
+                if (kanal != null) kanallar.add(kanal);
             }
         }
         if (o.has("cocuk")) {
             JSONObject k = o.getJSONObject("cocuk");
-            cocuk = new Link(k.optString("ad", cocuk.ad), k.optString("alt", cocuk.alt),
-                    k.optString("url", cocuk.url),
-                    k.has("paketler") ? strings(k.getJSONArray("paketler")) : cocuk.paketler,
-                    k.optBoolean("canli", cocuk.canli));
+            Link old = cocuk;
+            cocuk = new Link(k.optString("ad", old.ad), k.optString("alt", old.alt),
+                    k.optString("url", old.url),
+                    k.has("paketler") ? strings(k.getJSONArray("paketler")) : old.paketler,
+                    k.optBoolean("canli", old.canli));
+            String kapak = k.optString("kapak", "").trim();
+            cocuk.kapak = web(kapak) ? kapak : old.kapak;
+            cocuk.yazi = k.optBoolean("yazi", old.yazi);
         }
         if (o.has("ev")) {
             ev.clear();

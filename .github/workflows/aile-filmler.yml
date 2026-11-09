@@ -1,0 +1,49 @@
+# Builds the family screen's "Eski Türk Filmleri" list (launcher/filmler/build.py) and publishes
+# it as aile-filmler.json on the "filmler" branch, which the TV reads twice a day. Monthly: the
+# production companies add films slowly. The schedule runs from the default branch, so this file
+# lives on main as well as on aile; a push to aile that changes the script rebuilds at once.
+# If YouTube turns the runner away, the job fails and the TV keeps the list it has.
+name: aile-filmler
+
+on:
+  schedule:
+    - cron: "41 4 3 * *"
+  push:
+    branches: [aile]
+    paths:
+      - launcher/filmler/**
+      - .github/workflows/aile-filmler.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: aile-filmler
+  cancel-in-progress: false
+
+jobs:
+  filmler:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: aile
+      - name: Install yt-dlp
+        run: python3 -m pip install --quiet --upgrade yt-dlp
+      - name: Build the list
+        run: |
+          mkdir -p out
+          python3 launcher/filmler/build.py out/aile-filmler.json
+      - name: Publish on the filmler branch
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd out
+          git init -q -b filmler
+          git config user.name "aile-filmler"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add aile-filmler.json
+          git commit -q -m "Film listesi $(date -u +%Y-%m-%d)"
+          git push -q -f "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" filmler

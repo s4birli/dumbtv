@@ -99,7 +99,7 @@ public final class Home extends Activity {
         @Override
         public void onReceive(Context c, Intent i) {
             if (aile != null) {
-                aile.fill();
+                aile.rebuild();
                 return;
             }
             Uri data = i.getData();
@@ -404,7 +404,7 @@ public final class Home extends Activity {
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         if (aile != null) {
-            aile.focusFirst();
+            aile.goHome();
             return;
         }
         if (moving != null) stopMoving();
@@ -413,8 +413,9 @@ public final class Home extends Activity {
 
     @Override
     public void onBackPressed() {
-        if (aile != null) aile.focusFirst();
-        else focusFirst();
+        if (aile != null) {
+            if (!aile.back()) aile.focusFirst();
+        } else focusFirst();
     }
 
     @Override

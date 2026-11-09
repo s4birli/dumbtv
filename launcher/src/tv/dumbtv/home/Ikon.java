@@ -8,9 +8,9 @@ import android.graphics.PixelFormat;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 
-/** The family screen's four line icons (shield, gear, camera, microphone), drawn on a 24x24 grid. */
+/** The family screen's line icons (shield, gear, camera, microphone, back, play), on a 24x24 grid. */
 final class Ikon extends Drawable {
-    static final int KALKAN = 0, AYAR = 1, KAMERA = 2, MIKROFON = 3;
+    static final int KALKAN = 0, AYAR = 1, KAMERA = 2, MIKROFON = 3, GERI = 4, OYNAT = 5;
 
     private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Path path = new Path();
@@ -48,6 +48,19 @@ final class Ikon extends Drawable {
                 path.close();
                 r.set(1, 5, 16, 19);
                 path.addRoundRect(r, 2, 2, Path.Direction.CW);
+                break;
+            case GERI:
+                path.moveTo(15, 5);
+                path.lineTo(8, 12);
+                path.lineTo(15, 19);
+                break;
+            case OYNAT:
+                r.set(3, 4, 21, 20);
+                path.addRoundRect(r, 3, 3, Path.Direction.CW);
+                path.moveTo(10, 9);
+                path.lineTo(15, 12);
+                path.lineTo(10, 15);
+                path.close();
                 break;
             default:
                 r.set(9, 2, 15, 14);

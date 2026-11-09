@@ -32,7 +32,7 @@ final class Rehber {
     private static final String LAST = "last_try";
     private static final long EVERY = 60 * 60 * 1000L;
 
-    private static final class Program {
+    static final class Program {
         final long start, stop;
         final String title;
 
@@ -55,12 +55,30 @@ final class Rehber {
 
     /** The title on air now on {@code kanal}, or null when the guide has nothing for it. */
     static String now(Context c, String kanal, long nowMillis) {
+        Program p = current(c, kanal, nowMillis);
+        return p == null ? null : p.title;
+    }
+
+    /** The programme on air now, with its start and end (Unix seconds), or null. */
+    static Program current(Context c, String kanal, long nowMillis) {
         if (guide == null) guide = parse(readCache(c));
         Program[] list = guide.get(key(kanal));
         if (list == null) return null;
         long now = nowMillis / 1000;
         for (Program p : list) {
-            if (p.start <= now && now < p.stop) return p.title;
+            if (p.start <= now && now < p.stop) return p;
+        }
+        return null;
+    }
+
+    /** The first programme that starts after now, or null. */
+    static Program next(Context c, String kanal, long nowMillis) {
+        if (guide == null) guide = parse(readCache(c));
+        Program[] list = guide.get(key(kanal));
+        if (list == null) return null;
+        long now = nowMillis / 1000;
+        for (Program p : list) {
+            if (p.start > now) return p;
         }
         return null;
     }

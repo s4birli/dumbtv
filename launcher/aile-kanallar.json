@@ -1,11 +1,20 @@
 {
-  "_not": "Aile ekraninin kanal listesi. TV bu dosyayi 10 dakikada bir okur; burada duzeltilen bir yayin adresi TV'ye dokunmadan gecer. Sadece kanallar ve cocuk kutusu buradan degisir.",
+  "_not": "Aile ekraninin kanal listesi. TV bu dosyayi 10 dakikada bir okur; burada duzeltilen bir yayin adresi TV'ye dokunmadan gecer. grup: listedeki baslik. logoZemin koyu: beyaz logo koyu zeminde. paket/uygulama: kanal o uygulamada acilir, uygulama yuklu degilse listede gorunmez. cocuk.kapak: istege bagli resim adresi; bos ise canli yayinin kendi kapagi.",
   "kanallar": [
-    {"ad": "TRT 1", "url": "https://tv-trt1.medya.trt.com.tr/master.m3u8"},
-    {"ad": "Kanal D", "url": "https://demiroren.daioncdn.net/kanald/kanald.m3u8?app=kanald_web&ce=3"},
-    {"ad": "ATV", "url": "https://rnttwmjcin.turknet.ercdn.net/lcpmvefbyo/atv/atv_720p.m3u8"},
-    {"ad": "Show", "url": "https://www.youtube.com/watch?v=WxeHEn5N1vk"},
-    {"ad": "TV8", "url": "https://tv8.daioncdn.net/tv8/tv8.m3u8?app=7ddc255a-ef47-4e81-ab14-c0e5f2949788&ce=3"}
+    {"ad": "TRT 1", "url": "https://tv-trt1.medya.trt.com.tr/master.m3u8", "grup": "Türk kanalları", "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/TRT_1_logo_%282021-%29.svg/960px-TRT_1_logo_%282021-%29.svg.png"},
+    {"ad": "Kanal D", "url": "https://demiroren.daioncdn.net/kanald/kanald.m3u8?app=kanald_web&ce=3", "grup": "Türk kanalları", "logo": "https://static.kanald.com.tr/images/kanald-logo-250x60.png", "logoZemin": "koyu"},
+    {"ad": "ATV", "url": "https://rnttwmjcin.turknet.ercdn.net/lcpmvefbyo/atv/atv_720p.m3u8", "grup": "Türk kanalları", "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Atv_logo_2010.svg/960px-Atv_logo_2010.svg.png"},
+    {"ad": "Show TV", "url": "https://www.youtube.com/watch?v=WxeHEn5N1vk", "grup": "Türk kanalları", "rehber": "Show", "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Show_TV_logo.svg/960px-Show_TV_logo.svg.png"},
+    {"ad": "NOW", "url": "https://uycyyuuzyh.turknet.ercdn.net/nphindgytw/nowtv/nowtv.m3u8", "grup": "Türk kanalları", "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/db/NOW_TV_%28Turkey%29_wordmark-red.svg/960px-NOW_TV_%28Turkey%29_wordmark-red.svg.png"},
+    {"ad": "TV8", "url": "https://tv8.daioncdn.net/tv8/tv8.m3u8?app=7ddc255a-ef47-4e81-ab14-c0e5f2949788&ce=3", "grup": "Türk kanalları", "logo": "https://upload.wikimedia.org/wikipedia/tr/thumb/6/68/Tv8_Yeni_Logo.png/960px-Tv8_Yeni_Logo.png"},
+    {"ad": "BBC One", "url": "https://www.bbc.co.uk/iplayer/live/bbcone", "grup": "İngiliz kanalları", "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/BBC_One_logo_2021.svg/960px-BBC_One_logo_2021.svg.png", "uygulama": "BBC iPlayer", "paket": [ "bbc.iplayer.android", "uk.co.bbc.iplayer" ]},
+    {"ad": "BBC Two", "url": "https://www.bbc.co.uk/iplayer/live/bbctwo", "grup": "İngiliz kanalları", "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/BBC_Two_logo_2021.svg/960px-BBC_Two_logo_2021.svg.png", "uygulama": "BBC iPlayer", "paket": [ "bbc.iplayer.android", "uk.co.bbc.iplayer" ]},
+    {"ad": "ITV1", "grup": "İngiliz kanalları", "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/ITV1_Logo_2022.svg/960px-ITV1_Logo_2022.svg.png", "uygulama": "ITVX", "paket": [ "air.ITVMobilePlayer", "com.itv.itvx" ]},
+    {"ad": "Channel 4", "grup": "İngiliz kanalları", "logo": "https://d2n0069hmnqmmx.cloudfront.net/epgdata/1.0/newchanlogos/512/512/skychb1621.png", "logoZemin": "koyu", "uygulama": "Channel 4", "paket": [ "com.channel4.ondemand" ]},
+    {"ad": "Channel 5", "grup": "İngiliz kanalları", "logo": "https://d2n0069hmnqmmx.cloudfront.net/epgdata/1.0/newchanlogos/512/512/skychb1800.png", "logoZemin": "koyu", "uygulama": "5", "paket": [ "com.channel5.my5", "uk.co.channel5.my5" ]},
+    {"ad": "MovieSphere", "url": "https://moviesphereuk-samsunguk.amagi.tv/playlist.m3u8", "grup": "Film kanalları (24 saat)"},
+    {"ad": "MyTime Movies", "url": "https://appletree-mytimeuk-rakuten.amagi.tv/playlist.m3u8", "grup": "Film kanalları (24 saat)"},
+    {"ad": "Artflix Classics", "url": "https://amogonetworx-artflix-1-nl.samsung.wurl.tv/playlist.m3u8", "grup": "Film kanalları (24 saat)"}
   ],
-  "cocuk": {"ad": "Ms Rachel", "alt": "Canlı yayın · YouTube", "url": "https://www.youtube.com/watch?v=jBvzOfT8_44", "canli": true}
+  "cocuk": {"ad": "Ms Rachel", "alt": "Canlı yayın · YouTube", "url": "https://www.youtube.com/watch?v=jBvzOfT8_44", "canli": true, "kapak": ""}
 }
