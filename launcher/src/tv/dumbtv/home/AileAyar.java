@@ -38,6 +38,8 @@ final class AileAyar {
      */
     static final class Kanal {
         final String ad, url;
+        /** The channel's name in the TV guide when it differs from {@link #ad}; else null. */
+        String rehber;
 
         Kanal(String ad, String url) {
             this.ad = ad;
@@ -164,7 +166,10 @@ final class AileAyar {
                 if (k == null) continue;
                 String ad = k.optString("ad", "").trim(), url = k.optString("url", "").trim();
                 if (ad.isEmpty() || !web(url)) continue;
-                list.add(new Kanal(ad, url));
+                Kanal kanal = new Kanal(ad, url);
+                String r = k.optString("rehber", "").trim();
+                if (!r.isEmpty()) kanal.rehber = r;
+                list.add(kanal);
             }
             if (!list.isEmpty()) {
                 kanallar.clear();
@@ -191,7 +196,10 @@ final class AileAyar {
             JSONArray arr = o.getJSONArray("kanallar");
             for (int i = 0; i < arr.length(); i++) {
                 JSONObject k = arr.getJSONObject(i);
-                kanallar.add(new Kanal(k.getString("ad"), k.getString("url")));
+                Kanal kanal = new Kanal(k.getString("ad"), k.getString("url"));
+                String r = k.optString("rehber", "").trim();
+                if (!r.isEmpty()) kanal.rehber = r;
+                kanallar.add(kanal);
             }
         }
         if (o.has("cocuk")) {

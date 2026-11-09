@@ -77,7 +77,7 @@ final class Uzak {
         }, "aile-uzak").start();
     }
 
-    private static String fetch(String url) throws IOException {
+    static String fetch(String url) throws IOException {
         HttpURLConnection http = (HttpURLConnection) new URL(url).openConnection();
         try {
             http.setConnectTimeout(8000);

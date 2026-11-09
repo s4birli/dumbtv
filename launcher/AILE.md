@@ -40,6 +40,17 @@ when it is offline. Edit that file and push: the TV picks it up without adb. Onl
 and the children's tile can change this way, never which apps the screen launches. Up to six
 channels fit; more than four share the row.
 
+## What is on now
+
+Each channel tile shows the programme on air under its name. `launcher/rehber/build.py` takes
+the day's schedule from Türksat Kablo's public EPG files, and the `aile-rehber` GitHub Actions
+workflow runs it every two hours (and on any push that changes the channel list) and publishes
+`aile-rehber.json` on the `rehber` branch. The TV reads that once an hour and keeps the last
+copy. Each programme carries its start and end, so a stale copy shows nothing rather than a
+wrong title. A channel whose guide name differs from its tile name sets `"rehber"` in
+`aile-kanallar.json`. GitHub turns off scheduled workflows in a public repository after 60 days
+without activity; re-enable it in the Actions tab if the line under the channels disappears.
+
 ## Changing a channel without a new build (on the device)
 
 Stream addresses change. Put an `aile.json` next to the app and press HOME:

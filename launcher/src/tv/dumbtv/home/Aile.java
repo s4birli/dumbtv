@@ -44,6 +44,10 @@ final class Aile {
     private final Home home;
     private final float unit;
     private final List<Kart> glassTiles = new ArrayList<>();
+    /** The programme line under each channel name, in channel order, refreshed each minute. */
+    private final List<TextView> onAir = new ArrayList<>();
+    private final List<AileAyar.Kanal> onAirKanal = new ArrayList<>();
+    private final List<Kart> onAirTile = new ArrayList<>();
     private final List<TextView> pills = new ArrayList<>();
     private AileAyar ayar;
     private FrameLayout root;
@@ -79,6 +83,9 @@ final class Aile {
         ayar = AileAyar.load(home);
         if (root.getChildCount() > 1) root.removeViewAt(1);
         glassTiles.clear();
+        onAir.clear();
+        onAirKanal.clear();
+        onAirTile.clear();
         pills.clear();
         first = null;
         filterPill = null;
@@ -196,9 +203,21 @@ final class Aile {
             TextView name = text(n > 4 ? 42 : 46, 0xFFFFFFFF, BOLD);
             name.setText(k.ad);
             inner.addView(name);
+            // What is on now, from the TV guide; hidden when the guide has nothing.
+            TextView prog = text(24, 0xFFC9CEDA, SEMI);
+            prog.setSingleLine(true);
+            prog.setEllipsize(android.text.TextUtils.TruncateAt.END);
+            prog.setVisibility(View.GONE);
+            LinearLayout.LayoutParams pl = new LinearLayout.LayoutParams(MATCH, WRAP);
+            pl.topMargin = px(4);
+            inner.addView(prog, pl);
             t.addView(inner, new FrameLayout.LayoutParams(MATCH, MATCH));
             t.setTitle(name);
+            t.setSub(prog);
             t.setContentDescription(k.ad + ", canlı");
+            onAir.add(prog);
+            onAirKanal.add(k);
+            onAirTile.add(t);
             t.setOnClickListener(v -> openStream(k));
             glassTiles.add(t);
             if (first == null) first = t;
@@ -403,6 +422,7 @@ final class Aile {
         tick();
         focusFirst();
         Uzak.refresh(home, ayar.uzak, this::uzakChanged);
+        Rehber.refresh(home, Rehber.URL, this::showOnAir);
         // The filter is woken on resume and takes a moment to raise its VPN.
         for (long at : new long[] {4000, 10000, 20000}) root.postDelayed(this::checkFilter, at);
     }
@@ -412,6 +432,24 @@ final class Aile {
         boolean lent = Filter.lent(home);
         if (filterPill != null) filterPill.setVisibility(!up && !lent ? View.VISIBLE : View.GONE);
         if (surfPill != null) surfPill.setText(up && lent ? "Surfshark açık" : "Surfshark");
+    }
+
+    /** Puts the programme on air now under each channel name. */
+    private void showOnAir() {
+        long now = System.currentTimeMillis();
+        for (int i = 0; i < onAir.size(); i++) {
+            AileAyar.Kanal k = onAirKanal.get(i);
+            String title = Rehber.now(home, k.rehber != null ? k.rehber : k.ad, now);
+            TextView v = onAir.get(i);
+            if (title == null) {
+                v.setVisibility(View.GONE);
+                onAirTile.get(i).setContentDescription(k.ad + ", canlı");
+            } else {
+                v.setText(title);
+                v.setVisibility(View.VISIBLE);
+                onAirTile.get(i).setContentDescription(k.ad + ", canlı, şimdi " + title);
+            }
+        }
     }
 
     /** A new channel list arrived: rebuild, keeping the remote's place on the first channel. */
@@ -438,6 +476,8 @@ final class Aile {
         }
         // A TV left on this screen still picks up a fixed channel (at most every 10 minutes).
         if (ayar != null) Uzak.refresh(home, ayar.uzak, this::uzakChanged);
+        Rehber.refresh(home, Rehber.URL, this::showOnAir);
+        showOnAir();
         // While Surfshark has the slot, see each minute whether it is done with it.
         if (Filter.lent(home)) Filter.wake(home);
         checkFilter();
