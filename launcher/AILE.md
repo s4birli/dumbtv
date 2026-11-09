@@ -39,7 +39,8 @@ Stream addresses change. Put an `aile.json` next to the app and press HOME:
 adb push aile.json /sdcard/Android/data/tv.dumbtv.home/files/aile.json
 ```
 
-Any key left out keeps its built-in value:
+Any key left out keeps its built-in value. `logo` shows another installed app's TV banner on a
+tile (the YouTube tile opens SmartTube but shows the official YouTube banner):
 
 ```json
 {
@@ -49,7 +50,7 @@ Any key left out keeps its built-in value:
   ],
   "cocuk": {"ad": "Ms Rachel", "alt": "Canlı yayın · YouTube", "url": "https://www.youtube.com/watch?v=VIDEO_ID", "canli": true},
   "ev": [{"ad": "Kameralar", "alt": "Blink", "paketler": ["package.name"]}],
-  "uygulamalar": [{"ad": "Netflix", "paketler": ["com.netflix.ninja"]}],
+  "uygulamalar": [{"ad": "YouTube", "paketler": ["org.smarttube.stable"], "logo": "com.amazon.firetv.youtube"}],
   "surfshark": ["com.surfshark.vpnclient.android"],
   "oynatici": "org.xbmc.kodi"
 }

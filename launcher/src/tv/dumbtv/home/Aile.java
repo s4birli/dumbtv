@@ -307,7 +307,8 @@ final class Aile {
         for (int k = 0; k < shown.size(); k++) {
             AileAyar.Uygulama u = shown.get(k);
             String pkg = pkgs.get(k);
-            Drawable banner = Kart.banner(home, pkg);
+            Drawable banner = u.logo != null ? Kart.banner(home, u.logo) : null;
+            if (banner == null) banner = Kart.banner(home, pkg);
             Kart t;
             if (banner != null) {
                 t = new Kart(home, Kart.BANNER, 0, px(24), px(6));

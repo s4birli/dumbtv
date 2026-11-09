@@ -54,15 +54,24 @@ final class AileAyar {
         }
     }
 
-    /** An app slot: the first installed package of {@link #paketler} fills it. */
+    /**
+     * An app slot: the first installed package of {@link #paketler} fills it. {@link #logo}, when
+     * set, names another installed app whose TV banner the tile shows instead of its own.
+     */
     static final class Uygulama {
         final String ad, alt;
         final String[] paketler;
+        String logo;
 
         Uygulama(String ad, String alt, String[] paketler) {
             this.ad = ad;
             this.alt = alt;
             this.paketler = paketler;
+        }
+
+        Uygulama logo(String pkg) {
+            logo = pkg;
+            return this;
         }
     }
 
@@ -98,7 +107,9 @@ final class AileAyar {
         a.uygulamalar.add(new Uygulama("Netflix", null, new String[] {"com.netflix.ninja"}));
         a.uygulamalar.add(new Uygulama("Prime Video", null, new String[] {"com.amazon.firebat", "com.amazon.avod"}));
         a.uygulamalar.add(new Uygulama("Disney+", null, new String[] {"com.disney.disneyplus"}));
-        a.uygulamalar.add(new Uygulama("YouTube", null, YOUTUBE));
+        // SmartTube opens it, but the tile shows the official app's YouTube banner, which the
+        // family knows. The official app stays installed for that (and as a fallback).
+        a.uygulamalar.add(new Uygulama("YouTube", null, YOUTUBE).logo("com.amazon.firetv.youtube"));
         a.uygulamalar.add(new Uygulama("Kodi", null, new String[] {KODI}));
         // Fire TV's own browser: Chrome has no Fire TV build, and its phone build needs a mouse.
         a.uygulamalar.add(new Uygulama("İnternet", null, new String[] {"com.amazon.cloud9"}));
@@ -153,8 +164,9 @@ final class AileAyar {
         for (int i = 0; i < arr.length(); i++) {
             JSONObject u = arr.getJSONObject(i);
             String alt = u.optString("alt", "");
+            String logo = u.optString("logo", "");
             out.add(new Uygulama(u.getString("ad"), alt.isEmpty() ? null : alt,
-                    strings(u.getJSONArray("paketler"))));
+                    strings(u.getJSONArray("paketler"))).logo(logo.isEmpty() ? null : logo));
         }
         return out;
     }

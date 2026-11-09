@@ -18,7 +18,8 @@ public final class BootReceiver extends BroadcastReceiver {
             return;
         }
         Keeper.start(context);
-        Filter.forget(context);
+        // A reboot ends a loan to Surfshark (the filter starts itself); an update does not.
+        if (!Intent.ACTION_MY_PACKAGE_REPLACED.equals(intent.getAction())) Filter.forget(context);
         Filter.watch(context);
     }
 }
