@@ -5,6 +5,9 @@ import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
 import android.os.SystemClock;
 
 /**
@@ -33,7 +36,29 @@ final class Filter {
                 AlarmManager.INTERVAL_FIFTEEN_MINUTES, check);
     }
 
+    /**
+     * Wakes the filter unless a VPN is already up. That VPN is the filter itself (nothing to do)
+     * or one the owner started, such as Surfshark: Android runs one VPN at a time, and waking
+     * the filter would take the slot back and cut the other one off. Once that VPN is turned
+     * off, the next HOME press or the 15-minute check brings the filter back.
+     */
     static void wake(Context c) {
+        if (vpnUp(c)) return;
         c.sendBroadcast(new Intent().setComponent(BOOT));
+    }
+
+    /** True when any VPN is up. Fire OS 7 and later lack the permission, so they always wake. */
+    static boolean vpnUp(Context c) {
+        try {
+            ConnectivityManager cm = (ConnectivityManager) c.getSystemService(Context.CONNECTIVITY_SERVICE);
+            if (cm == null) return false;
+            for (Network n : cm.getAllNetworks()) {
+                NetworkCapabilities caps = cm.getNetworkCapabilities(n);
+                if (caps != null && caps.hasTransport(NetworkCapabilities.TRANSPORT_VPN)) return true;
+            }
+        } catch (SecurityException e) {
+            // No ACCESS_NETWORK_STATE (Fire OS 7 and later): behave as before and wake.
+        }
+        return false;
     }
 }

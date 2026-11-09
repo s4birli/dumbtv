@@ -50,6 +50,8 @@ final class Aile {
     private Gokyuzu sky;
     private TextView clock, date;
     private Kart first;
+    /** Shown only when no VPN is up: the DNS filter did not come back after Surfshark. */
+    private TextView filterPill;
 
     Aile(Home home) {
         this.home = home;
@@ -78,6 +80,7 @@ final class Aile {
         glassTiles.clear();
         pills.clear();
         first = null;
+        filterPill = null;
 
         LinearLayout column = new LinearLayout(home);
         column.setOrientation(LinearLayout.VERTICAL);
@@ -119,6 +122,14 @@ final class Aile {
         when.addView(date, dl);
         h.addView(when, new LinearLayout.LayoutParams(0, WRAP, 1));
 
+        String filter = launchable(new String[] {"dnsfilter.android"});
+        if (filter != null) {
+            filterPill = pill("Filtre kapalı", Ikon.KALKAN, v -> openApp(filter));
+            filterPill.setVisibility(View.GONE);
+            LinearLayout.LayoutParams fl = new LinearLayout.LayoutParams(WRAP, px(56));
+            fl.rightMargin = px(16);
+            h.addView(filterPill, fl);
+        }
         String surf = launchable(ayar.surfshark);
         if (surf != null) h.addView(pill("Surfshark", Ikon.KALKAN, v -> openApp(surf)));
         TextView settings = pill("Ayarlar", Ikon.AYAR, v -> home.openSettings());
@@ -347,6 +358,14 @@ final class Aile {
     void resume() {
         tick();
         focusFirst();
+        // The filter is woken on resume and takes a moment to raise its VPN.
+        if (filterPill != null) root.postDelayed(this::checkFilter, 4000);
+    }
+
+    private void checkFilter() {
+        if (filterPill == null) return;
+        boolean off = !Filter.vpnUp(home);
+        filterPill.setVisibility(off ? View.VISIBLE : View.GONE);
     }
 
     void focusFirst() {
@@ -365,6 +384,7 @@ final class Aile {
         if (sky.phase() != before) {
             for (TextView p : pills) paintPill(p, p.isFocused());
         }
+        checkFilter();
     }
 
     // ---- small builders ----------------------------------------------------------------------
