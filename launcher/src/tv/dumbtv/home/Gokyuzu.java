@@ -28,11 +28,6 @@ final class Gokyuzu extends View {
     private static final float[][] LIGHTS = {
         {196, 626}, {222, 638}, {778, 630}, {900, 560}, {1000, 636}, {1584, 632}, {1722, 624}
     };
-    /** Moon or sun reflection: x offset, y, width, relative alpha. */
-    private static final float[][] REFLECTION = {
-        {-22, 680, 44, 1f}, {-32, 712, 64, .75f}, {-16, 744, 32, .6f}, {-28, 780, 56, .45f},
-        {-12, 820, 24, .3f}
-    };
 
     /** One time of day: sky stops, orb (sun or moon), skyline colour and the overlay levels. */
     private static final class Look {
@@ -184,12 +179,6 @@ final class Gokyuzu extends View {
             paint.setColor(0xFFF6C870);
             paint.setAlpha(Math.round(255 * l.lights));
             for (float[] p : LIGHTS) canvas.drawCircle(p[0], p[1], 2.1f, paint);
-        }
-
-        paint.setColor(l.orb);
-        for (float[] r : REFLECTION) {
-            paint.setAlpha(Math.round(255 * l.reflection * r[3]));
-            canvas.drawRect(l.orbX + r[0], r[1], l.orbX + r[0] + r[2], r[1] + 3, paint);
         }
 
         if (l.dim > 0) {

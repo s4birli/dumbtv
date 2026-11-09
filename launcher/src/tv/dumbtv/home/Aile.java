@@ -119,7 +119,7 @@ final class Aile {
         when.addView(date, dl);
         h.addView(when, new LinearLayout.LayoutParams(0, WRAP, 1));
 
-        String surf = installed(ayar.surfshark);
+        String surf = launchable(ayar.surfshark);
         if (surf != null) h.addView(pill("Surfshark", Ikon.KALKAN, v -> openApp(surf)));
         TextView settings = pill("Ayarlar", Ikon.AYAR, v -> home.openSettings());
         LinearLayout.LayoutParams sl = new LinearLayout.LayoutParams(WRAP, px(56));
@@ -222,7 +222,7 @@ final class Aile {
 
         List<View> homeTiles = new ArrayList<>();
         for (AileAyar.Uygulama u : ayar.ev) {
-            String pkg = installed(u.paketler);
+            String pkg = launchable(u.paketler);
             if (pkg == null) continue;
             int icon = u.ad.toLowerCase(TR).contains("alexa") ? Ikon.MIKROFON : Ikon.KAMERA;
             homeTiles.add(glassTile(u.ad, u.alt, icon, 38, v -> openApp(pkg)));
@@ -277,7 +277,7 @@ final class Aile {
         int n = 0;
         for (AileAyar.Uygulama u : ayar.uygulamalar) {
             if (n == 5) break;
-            String pkg = installed(u.paketler);
+            String pkg = launchable(u.paketler);
             if (pkg == null) continue;
             Drawable banner = Kart.banner(home, pkg);
             Kart t;
@@ -339,10 +339,10 @@ final class Aile {
 
     // ---- lifecycle from Home -------------------------------------------------------------------
 
+    /** Back on the screen, by HOME or from an app: always start on the first channel. */
     void resume() {
         tick();
-        View f = home.getCurrentFocus();
-        if (f == null || !f.isShown()) focusFirst();
+        focusFirst();
     }
 
     void focusFirst() {
@@ -429,6 +429,21 @@ final class Aile {
             } catch (PackageManager.NameNotFoundException ignored) {
                 // try the next one
             }
+        }
+        return null;
+    }
+
+    /**
+     * The first of {@code pkgs} that can be opened from a home screen, or null. Fire OS's own
+     * Alexa (com.amazon.vizzini) is installed but has no screen to open, so its tile stays away.
+     */
+    private String launchable(String[] pkgs) {
+        if (pkgs == null) return null;
+        PackageManager pm = home.getPackageManager();
+        for (String p : pkgs) {
+            if (installed(new String[] {p}) == null) continue;
+            if (pm.getLeanbackLaunchIntentForPackage(p) != null
+                    || pm.getLaunchIntentForPackage(p) != null) return p;
         }
         return null;
     }
