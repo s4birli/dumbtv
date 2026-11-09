@@ -310,6 +310,10 @@ final class Aile {
     // ---- actions -----------------------------------------------------------------------------
 
     private void openStream(AileAyar.Kanal k) {
+        if (AileAyar.isYoutube(k.url)) {
+            openLink(new AileAyar.Link(k.ad, null, k.url, AileAyar.YOUTUBE, true));
+            return;
+        }
         Intent i = new Intent(Intent.ACTION_VIEW).setDataAndType(Uri.parse(k.url), "video/*");
         if (has(ayar.player)) i.setPackage(ayar.player);
         else {

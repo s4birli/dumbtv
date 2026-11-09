@@ -23,8 +23,13 @@ import java.util.List;
 final class AileAyar {
     static final String FILE = "aile.json";
     static final String KODI = "org.xbmc.kodi";
+    /** Apps that open a YouTube link, best first: SmartTube has no ads. */
+    static final String[] YOUTUBE = {"org.smarttube.stable", "org.smarttube.beta", "com.amazon.firetv.youtube"};
 
-    /** A live channel: opened in {@link #player} as a video stream. */
+    /**
+     * A live channel: a stream address opened in {@link #player}, or a YouTube live link opened
+     * in {@link #YOUTUBE}.
+     */
     static final class Kanal {
         final String ad, url;
 
@@ -70,16 +75,22 @@ final class AileAyar {
 
     private AileAyar() {}
 
+    static boolean isYoutube(String url) {
+        return url.contains("youtube.com/") || url.contains("youtu.be/");
+    }
+
     static AileAyar defaults() {
         AileAyar a = new AileAyar();
         a.kanallar.add(new Kanal("TRT 1", "https://tv-trt1.medya.trt.com.tr/master.m3u8"));
         a.kanallar.add(new Kanal("Kanal D", "https://demiroren.daioncdn.net/kanald/kanald.m3u8?app=kanald_web&ce=3"));
         a.kanallar.add(new Kanal("ATV", "https://rnttwmjcin.turknet.ercdn.net/lcpmvefbyo/atv/atv_1080p.m3u8"));
+        // Show has no public stream address that works; the family uses this YouTube live link.
+        a.kanallar.add(new Kanal("Show", "https://www.youtube.com/watch?v=WxeHEn5N1vk"));
         // The live stream the family watches. A live video's id can change when the stream
         // restarts: then put the new link in aile.json ("cocuk": {"url": ...}).
         a.cocuk = new Link("Ms Rachel", "Canlı yayın · YouTube",
                 "https://www.youtube.com/watch?v=jBvzOfT8_44",
-                new String[] {"org.smarttube.stable", "org.smarttube.beta", "com.amazon.firetv.youtube"}, true);
+                YOUTUBE, true);
         a.ev.add(new Uygulama("Kameralar", "Blink", new String[] {
             "com.immediasemi.android.blink", "com.immediasemi.blink"}));
         a.ev.add(new Uygulama("Alexa", "Sesli asistan", new String[] {
@@ -87,8 +98,7 @@ final class AileAyar {
         a.uygulamalar.add(new Uygulama("Netflix", null, new String[] {"com.netflix.ninja"}));
         a.uygulamalar.add(new Uygulama("Prime Video", null, new String[] {"com.amazon.firebat", "com.amazon.avod"}));
         a.uygulamalar.add(new Uygulama("Disney+", null, new String[] {"com.disney.disneyplus"}));
-        a.uygulamalar.add(new Uygulama("YouTube", null, new String[] {
-            "org.smarttube.stable", "org.smarttube.beta", "com.amazon.firetv.youtube"}));
+        a.uygulamalar.add(new Uygulama("YouTube", null, YOUTUBE));
         a.uygulamalar.add(new Uygulama("Kodi", null, new String[] {KODI}));
         a.surfshark = new String[] {"com.surfshark.vpnclient.android"};
         return a;
