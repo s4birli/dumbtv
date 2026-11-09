@@ -9,7 +9,6 @@ import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
-import android.net.VpnService;
 import android.os.SystemClock;
 
 /**
@@ -26,8 +25,8 @@ import android.os.SystemClock;
  * Surfshark refuses to connect while another is up ("Another VPN was detected").
  */
 final class Filter {
-    private static final ComponentName BOOT =
-            new ComponentName("dnsfilter.android", "dnsfilter.android.BootUpReceiver");
+    static final String PKG = "dnsfilter.android";
+    private static final ComponentName BOOT = new ComponentName(PKG, PKG + ".BootUpReceiver");
     static final String CHECK = "tv.dumbtv.home.CHECK_FILTER";
 
     private static final String PREFS = "aile_vpn";
@@ -77,23 +76,30 @@ final class Filter {
     }
 
     /**
-     * Frees the VPN slot for Surfshark. Preparing VPN for this app, which install.sh pre-consents
-     * with the ACTIVATE_VPN app-op, makes Android revoke the VPN that holds the slot: the
-     * filter's. Returns false when the slot could not be freed (no pre-consent).
+     * Frees the VPN slot for Surfshark, which refuses to connect while another VPN is up
+     * ("Another VPN was detected"). The filter is closed the way its own CLOSE button does it:
+     * its screen started with SHOULD_FINISH ends the app at once, and its VPN with it. Unlike
+     * a revoke, which leaves a half-stopped process its boot receiver cannot restart, this lets
+     * the filter start normally once the loan ends.
+     *
+     * Returns true when the filter was told to close; its VPN is gone a second or two later.
      */
     static boolean lend(Context c) {
         SharedPreferences p = prefs(c);
         // Lent already: the VPN that is up, if any, is Surfshark's. Keep it.
-        if (p.getLong(LENT_AT, 0) != 0 && vpnUp(c)) return true;
-        if (vpnUp(c)) {
+        boolean close = p.getLong(LENT_AT, 0) == 0 && vpnUp(c);
+        if (close) {
+            Intent i = new Intent().setComponent(new ComponentName(PKG, PKG + ".DNSProxyActivity"))
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                    .putExtra("SHOULD_FINISH", true);
             try {
-                if (VpnService.prepare(c) != null) return false;
+                c.startActivity(i);
             } catch (RuntimeException e) {
-                return false;
+                close = false;
             }
         }
         p.edit().putLong(LENT_AT, System.currentTimeMillis()).putBoolean(SEEN, false).apply();
-        return true;
+        return close;
     }
 
     /** True while the slot is lent to Surfshark: the filter being off is then expected. */

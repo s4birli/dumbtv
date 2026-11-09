@@ -160,9 +160,6 @@ sh_ appops write-settings >/dev/null 2>&1 || true
 if [[ $dev_sdk -lt 28 ]]; then
   set_guard ""
   sh_ appops set $PKG GET_USAGE_STATS allow
-  # Aile: the Surfshark pill frees the one VPN slot by preparing VPN for this app, which makes
-  # Android revoke the filter's VPN. Pre-consent it so no dialog appears.
-  sh_ appops set $PKG ACTIVATE_VPN allow >/dev/null 2>&1 || true
   # App-ops reach the disk lazily: a reboot soon after install dropped this grant on an AFTMM,
   # and the Keeper then never saw Amazon's home come back. Write it now.
   sh_ appops write-settings >/dev/null 2>&1 || true

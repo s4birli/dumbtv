@@ -365,13 +365,17 @@ final class Aile {
      * first. It comes back by itself once Surfshark is turned off (see Filter.wake).
      */
     private void openSurfshark(String pkg) {
-        if (!Filter.lend(home)) {
-            Toast.makeText(home, "Önce filtreyi kapatın (CLOSE)", Toast.LENGTH_LONG).show();
-            openApp("dnsfilter.android");
+        if (Filter.lend(home)) afterFilter(pkg, 0);
+        else openApp(pkg);
+    }
+
+    /** Opens Surfshark once the filter's VPN is down, as Surfshark checks for one at start. */
+    private void afterFilter(String pkg, int tries) {
+        if (!Filter.vpnUp(home) || tries >= 24) {
+            root.postDelayed(() -> openApp(pkg), 300);
             return;
         }
-        // Android drops the filter's VPN within a moment; Surfshark checks for one at start.
-        root.postDelayed(() -> openApp(pkg), 800);
+        root.postDelayed(() -> afterFilter(pkg, tries + 1), 250);
     }
 
     private void openApp(String pkg) {
@@ -392,7 +396,7 @@ final class Aile {
         tick();
         focusFirst();
         // The filter is woken on resume and takes a moment to raise its VPN.
-        root.postDelayed(this::checkFilter, 4000);
+        for (long at : new long[] {4000, 10000, 20000}) root.postDelayed(this::checkFilter, at);
     }
 
     private void checkFilter() {
