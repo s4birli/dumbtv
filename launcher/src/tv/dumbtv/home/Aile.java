@@ -52,6 +52,7 @@ final class Aile {
     private Kart first;
     /** Shown only when no VPN is up: the DNS filter did not come back after Surfshark. */
     private TextView filterPill;
+    private TextView surfPill;
 
     Aile(Home home) {
         this.home = home;
@@ -81,6 +82,7 @@ final class Aile {
         pills.clear();
         first = null;
         filterPill = null;
+        surfPill = null;
 
         LinearLayout column = new LinearLayout(home);
         column.setOrientation(LinearLayout.VERTICAL);
@@ -131,7 +133,10 @@ final class Aile {
             h.addView(filterPill, fl);
         }
         String surf = launchable(ayar.surfshark);
-        if (surf != null) h.addView(pill("Surfshark", Ikon.KALKAN, v -> openApp(surf)));
+        if (surf != null) {
+            surfPill = pill("Surfshark", Ikon.KALKAN, v -> openSurfshark(surf));
+            h.addView(surfPill);
+        }
         TextView settings = pill("Ayarlar", Ikon.AYAR, v -> home.openSettings());
         LinearLayout.LayoutParams sl = new LinearLayout.LayoutParams(WRAP, px(56));
         sl.leftMargin = px(16);
@@ -285,11 +290,23 @@ final class Aile {
     private View apps() {
         LinearLayout tiles = row();
         tiles.setClipChildren(false);
-        int n = 0;
+        List<AileAyar.Uygulama> shown = new ArrayList<>();
+        List<String> pkgs = new ArrayList<>();
         for (AileAyar.Uygulama u : ayar.uygulamalar) {
-            if (n == 5) break;
+            if (shown.size() == 6) break;
             String pkg = launchable(u.paketler);
             if (pkg == null) continue;
+            shown.add(u);
+            pkgs.add(pkg);
+        }
+        // Five 320 x 180 banners fill the 1728 wide column; a sixth shrinks them all to fit.
+        float gap = shown.size() > 5 ? 24 : 32;
+        float w = shown.size() > 5 ? (1728 - gap * (shown.size() - 1)) / shown.size() : 320;
+        float h = w * 9 / 16;
+        int n = 0;
+        for (int k = 0; k < shown.size(); k++) {
+            AileAyar.Uygulama u = shown.get(k);
+            String pkg = pkgs.get(k);
             Drawable banner = Kart.banner(home, pkg);
             Kart t;
             if (banner != null) {
@@ -309,7 +326,9 @@ final class Aile {
             }
             t.setContentDescription(u.ad);
             t.setOnClickListener(v -> openApp(pkg));
-            tiles.addView(t, tileParams(320, 180, n));
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(px(w), px(h));
+            if (n > 0) lp.leftMargin = px(gap);
+            tiles.addView(t, lp);
             n++;
         }
         if (n == 0) return null;
@@ -341,6 +360,20 @@ final class Aile {
         home.launch(i, null);
     }
 
+    /**
+     * Surfshark refuses to connect while the filter's VPN is up, so the filter lends it the slot
+     * first. It comes back by itself once Surfshark is turned off (see Filter.wake).
+     */
+    private void openSurfshark(String pkg) {
+        if (!Filter.lend(home)) {
+            Toast.makeText(home, "Önce filtreyi kapatın (CLOSE)", Toast.LENGTH_LONG).show();
+            openApp("dnsfilter.android");
+            return;
+        }
+        // Android drops the filter's VPN within a moment; Surfshark checks for one at start.
+        root.postDelayed(() -> openApp(pkg), 800);
+    }
+
     private void openApp(String pkg) {
         PackageManager pm = home.getPackageManager();
         Intent i = pm.getLeanbackLaunchIntentForPackage(pkg);
@@ -359,13 +392,14 @@ final class Aile {
         tick();
         focusFirst();
         // The filter is woken on resume and takes a moment to raise its VPN.
-        if (filterPill != null) root.postDelayed(this::checkFilter, 4000);
+        root.postDelayed(this::checkFilter, 4000);
     }
 
     private void checkFilter() {
-        if (filterPill == null) return;
-        boolean off = !Filter.vpnUp(home);
-        filterPill.setVisibility(off ? View.VISIBLE : View.GONE);
+        boolean up = Filter.vpnUp(home);
+        boolean lent = Filter.lent(home);
+        if (filterPill != null) filterPill.setVisibility(!up && !lent ? View.VISIBLE : View.GONE);
+        if (surfPill != null) surfPill.setText(up && lent ? "Surfshark açık" : "Surfshark");
     }
 
     void focusFirst() {
@@ -384,6 +418,8 @@ final class Aile {
         if (sky.phase() != before) {
             for (TextView p : pills) paintPill(p, p.isFocused());
         }
+        // While Surfshark has the slot, see each minute whether it is done with it.
+        if (Filter.lent(home)) Filter.wake(home);
         checkFilter();
     }
 

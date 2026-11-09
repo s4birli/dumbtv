@@ -100,6 +100,8 @@ final class AileAyar {
         a.uygulamalar.add(new Uygulama("Disney+", null, new String[] {"com.disney.disneyplus"}));
         a.uygulamalar.add(new Uygulama("YouTube", null, YOUTUBE));
         a.uygulamalar.add(new Uygulama("Kodi", null, new String[] {KODI}));
+        // Fire TV's own browser: Chrome has no Fire TV build, and its phone build needs a mouse.
+        a.uygulamalar.add(new Uygulama("İnternet", null, new String[] {"com.amazon.cloud9"}));
         a.surfshark = new String[] {"com.surfshark.vpnclient.android"};
         return a;
     }

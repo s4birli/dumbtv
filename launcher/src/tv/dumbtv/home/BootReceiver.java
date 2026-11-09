@@ -18,6 +18,7 @@ public final class BootReceiver extends BroadcastReceiver {
             return;
         }
         Keeper.start(context);
+        Filter.forget(context);
         Filter.watch(context);
     }
 }
