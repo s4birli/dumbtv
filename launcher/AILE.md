@@ -10,7 +10,7 @@ The main screen has three big tiles and a row of apps:
   BBC Two, Three, Four, News and CBeebies from the BBC's own UK streams; ITV1, Channel 4 and
   Channel 5 in their apps), Çocuk kanalları (CBeebies, CBBC, Tiny Pop, Pop, Moonbug Kids, Mr Bean
   cartoons), Eğlence ve belgesel (Mr Bean, Graham Norton, Hell's Kitchen, Homes Under the Hammer,
-  NatureTime, Tastemade; free channels the rights holders stream for Samsung TV Plus, LG Channels
+  NatureTime, Tastemade, The Pet Collective; free channels the rights holders stream for Samsung TV Plus, LG Channels
   and Rakuten TV) and Film kanalları (24 saat: MovieSphere, MyTime Movies, GREAT!
   movies, Artflix Classics). Other UK channels in Kodi's iptv-org list come from third-party
   restreams, not the broadcasters, and are left out. Each row shows its logo, the programme on air with its hours and how far

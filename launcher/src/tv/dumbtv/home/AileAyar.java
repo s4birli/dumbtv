@@ -177,6 +177,7 @@ final class AileAyar {
                 .logo("https://d2n0069hmnqmmx.cloudfront.net/epgdata/1.0/newchanlogos/512/512/skychb1621.png", true));
         a.kanallar.add(new Kanal("Channel 5", "").grup(uk).app("5", "com.channel5.my5", "uk.co.channel5.my5")
                 .logo("https://d2n0069hmnqmmx.cloudfront.net/epgdata/1.0/newchanlogos/512/512/skychb1800.png", true));
+        a.kanallar.add(new Kanal("E4", "").grup(uk).app("Channel 4", "com.channel4.ondemand"));
         // Free channels the broadcasters themselves stream (BBC, and FAST channels on Amagi
         // and Wurl, the feeds of Samsung TV Plus, LG Channels and Rakuten TV).
         String kids = "Çocuk kanalları", fun = "Eğlence ve belgesel";
@@ -200,6 +201,7 @@ final class AileAyar {
         a.kanallar.add(new Kanal("NatureTime", "https://amg01515-amg01515c43-samsung-gb-9038.playouts.now.amagi.tv/playlist.m3u8").grup(fun));
         a.kanallar.add(new Kanal("Tastemade", "https://tastemade-tdint-rakuten.amagi.tv/playlist.m3u8").grup(fun)
                 .logo("https://upload.wikimedia.org/wikipedia/commons/thumb/b/bc/TastemadeLogo.svg/960px-TastemadeLogo.svg.png", false));
+        a.kanallar.add(new Kanal("The Pet Collective", "https://the-pet-collective-international-gb.samsung.wurl.tv/playlist.m3u8").grup(fun));
         a.kanallar.add(new Kanal("MovieSphere", "https://moviesphereuk-samsunguk.amagi.tv/playlist.m3u8").grup(film));
         a.kanallar.add(new Kanal("MyTime Movies", "https://appletree-mytimeuk-rakuten.amagi.tv/playlist.m3u8").grup(film));
         a.kanallar.add(new Kanal("GREAT! movies", "https://amg01753-narrativeuk-amg01753c3-lg-gb-1833.playouts.now.amagi.tv/playlist/amg01753-narrativeuk-greatmovies-lggb/playlist.m3u8").grup(film));
