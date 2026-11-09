@@ -53,8 +53,10 @@ and the children's tile can change this way, never which apps the screen launche
 has `ad`, `url` and optionally `grup` (its heading in the list), `logo` (a picture address),
 `"logoZemin": "koyu"` for a white logo, `rehber` (its name in the guide), and, for a channel
 watched in an app, `uygulama` and `paket` (the app's package names; the first installed wins).
-The children's tile takes an optional `kapak`: a picture address shown instead of the stream's
-own cover.
+The children's tile takes an optional `kapak`: a picture address that fills the tile instead
+of the stream's own cover (which comes back if the picture cannot be had), and `"yazi": false`
+to show the picture without the name over it. Both also work in `aile.json` on the device, which
+is read again on the next HOME after it changes.
 
 ## Eski Türk Filmleri
 

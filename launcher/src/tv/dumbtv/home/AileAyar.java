@@ -198,6 +198,13 @@ final class AileAyar {
      * Defaults, then the last channel list fetched from the internet, then whatever aile.json on
      * the device overrides. A broken file is ignored, not fatal.
      */
+    /** When aile.json on the device last changed (0 when there is none), to notice an edit. */
+    static long localStamp(Context c) {
+        File dir = c.getExternalFilesDir(null);
+        File f = dir == null ? null : new File(dir, FILE);
+        return f != null && f.isFile() ? f.lastModified() : 0;
+    }
+
     static AileAyar load(Context c) {
         AileAyar a = defaults();
         File cache = new File(c.getFilesDir(), Uzak.CACHE);

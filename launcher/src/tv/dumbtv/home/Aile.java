@@ -60,6 +60,8 @@ final class Aile {
     private Kart liveTile, kidsTile, filmTile;
     private Detay detay;
     private AileAyar ayar;
+    /** aile.json's time when the screen was built; a newer one is read on the next resume. */
+    private long localStamp;
     private FrameLayout root;
     private Gokyuzu sky;
     private TextView clock, date;
@@ -90,6 +92,7 @@ final class Aile {
 
     /** (Re)builds the current screen, after a start, a new channel list or an app change. */
     void fill() {
+        localStamp = AileAyar.localStamp(home);
         ayar = AileAyar.load(home);
         if (root.getChildCount() > 1) root.removeViewAt(1);
         glassTiles.clear();
@@ -332,12 +335,15 @@ final class Aile {
         img.setScaleType(ImageView.ScaleType.CENTER_CROP);
         t.addView(img, new FrameLayout.LayoutParams(MATCH, MATCH));
         String id = AileAyar.youtubeId(c.url);
-        String[] urls = c.kapak != null ? new String[] {c.kapak}
-                : id == null ? new String[0] : new String[] {
-                    "https://i.ytimg.com/vi/" + id + "/maxresdefault_live.jpg",
-                    "https://i.ytimg.com/vi/" + id + "/maxresdefault.jpg",
-                    "https://i.ytimg.com/vi/" + id + "/hqdefault_live.jpg"};
-        Resim.load(img, urls, px(470), px(560), 6 * 60 * 60 * 1000L);
+        // The family's picture first; the stream's own covers if it cannot be had.
+        List<String> urls = new ArrayList<>();
+        if (c.kapak != null) urls.add(c.kapak);
+        if (id != null) {
+            urls.add("https://i.ytimg.com/vi/" + id + "/maxresdefault_live.jpg");
+            urls.add("https://i.ytimg.com/vi/" + id + "/maxresdefault.jpg");
+            urls.add("https://i.ytimg.com/vi/" + id + "/hqdefault_live.jpg");
+        }
+        Resim.load(img, urls.toArray(new String[0]), px(470), px(560), 6 * 60 * 60 * 1000L);
 
         if (c.yazi) {
             // A shade from the bottom, so white text reads on any picture.
@@ -1070,6 +1076,8 @@ final class Aile {
                 fill();
             }
         }
+        // An aile.json pushed with adb shows on the next HOME.
+        if (AileAyar.localStamp(home) != localStamp) fill();
         tick();
         if (screen == ANA || home.getCurrentFocus() == null) focusFirst();
         Uzak.refresh(home, ayar.uzak, this::uzakChanged);
