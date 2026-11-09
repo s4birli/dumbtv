@@ -1,0 +1,11 @@
+{
+  "_not": "Aile ekraninin kanal listesi. TV bu dosyayi 10 dakikada bir okur; burada duzeltilen bir yayin adresi TV'ye dokunmadan gecer. Sadece kanallar ve cocuk kutusu buradan degisir.",
+  "kanallar": [
+    {"ad": "TRT 1", "url": "https://tv-trt1.medya.trt.com.tr/master.m3u8"},
+    {"ad": "Kanal D", "url": "https://demiroren.daioncdn.net/kanald/kanald.m3u8?app=kanald_web&ce=3"},
+    {"ad": "ATV", "url": "https://rnttwmjcin.turknet.ercdn.net/lcpmvefbyo/atv/atv_720p.m3u8"},
+    {"ad": "Show", "url": "https://www.youtube.com/watch?v=WxeHEn5N1vk"},
+    {"ad": "TV8", "url": "https://tv8.daioncdn.net/tv8/tv8.m3u8?app=7ddc255a-ef47-4e81-ab14-c0e5f2949788&ce=3"}
+  ],
+  "cocuk": {"ad": "Ms Rachel", "alt": "Canlı yayın · YouTube", "url": "https://www.youtube.com/watch?v=jBvzOfT8_44", "canli": true}
+}

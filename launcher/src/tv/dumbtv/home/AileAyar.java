@@ -22,6 +22,12 @@ import java.util.List;
  */
 final class AileAyar {
     static final String FILE = "aile.json";
+    /**
+     * The channel list fetched from the internet (see {@link Uzak}): editing this file in the
+     * repository fixes a channel on the TV within minutes. aile.json can point elsewhere with
+     * "uzak", or switch it off with "uzak": "".
+     */
+    static final String UZAK = "https://raw.githubusercontent.com/s4birli/dumbtv/aile/launcher/aile-kanallar.json";
     static final String KODI = "org.xbmc.kodi";
     /** Apps that open a YouTube link, best first: SmartTube has no ads. */
     static final String[] YOUTUBE = {"org.smarttube.stable", "org.smarttube.beta", "com.amazon.firetv.youtube"};
@@ -81,6 +87,7 @@ final class AileAyar {
     final List<Uygulama> uygulamalar = new ArrayList<>();
     String[] surfshark;
     String player = KODI;
+    String uzak = UZAK;
 
     private AileAyar() {}
 
@@ -92,9 +99,11 @@ final class AileAyar {
         AileAyar a = new AileAyar();
         a.kanallar.add(new Kanal("TRT 1", "https://tv-trt1.medya.trt.com.tr/master.m3u8"));
         a.kanallar.add(new Kanal("Kanal D", "https://demiroren.daioncdn.net/kanald/kanald.m3u8?app=kanald_web&ce=3"));
-        a.kanallar.add(new Kanal("ATV", "https://rnttwmjcin.turknet.ercdn.net/lcpmvefbyo/atv/atv_1080p.m3u8"));
+        // 720p: the 1080p playlist of this CDN times out about every other request.
+        a.kanallar.add(new Kanal("ATV", "https://rnttwmjcin.turknet.ercdn.net/lcpmvefbyo/atv/atv_720p.m3u8"));
         // Show has no public stream address that works; the family uses this YouTube live link.
         a.kanallar.add(new Kanal("Show", "https://www.youtube.com/watch?v=WxeHEn5N1vk"));
+        a.kanallar.add(new Kanal("TV8", "https://tv8.daioncdn.net/tv8/tv8.m3u8?app=7ddc255a-ef47-4e81-ab14-c0e5f2949788&ce=3"));
         // The live stream the family watches. A live video's id can change when the stream
         // restarts: then put the new link in aile.json ("cocuk": {"url": ...}).
         a.cocuk = new Link("Ms Rachel", "Canlı yayın · YouTube",
@@ -117,9 +126,20 @@ final class AileAyar {
         return a;
     }
 
-    /** Defaults, then whatever aile.json overrides. A broken file is ignored, not fatal. */
+    /**
+     * Defaults, then the last channel list fetched from the internet, then whatever aile.json on
+     * the device overrides. A broken file is ignored, not fatal.
+     */
     static AileAyar load(Context c) {
         AileAyar a = defaults();
+        File cache = new File(c.getFilesDir(), Uzak.CACHE);
+        if (cache.isFile()) {
+            try {
+                a.applyUzak(new JSONObject(read(cache)));
+            } catch (IOException | JSONException e) {
+                Keeper.note("uzak ayar ignored: " + e.getMessage());
+            }
+        }
         File dir = c.getExternalFilesDir(null);
         File f = dir == null ? null : new File(dir, FILE);
         if (f == null || !f.isFile()) return a;
@@ -129,6 +149,40 @@ final class AileAyar {
             Keeper.note("aile.json ignored: " + e.getMessage());
         }
         return a;
+    }
+
+    /**
+     * The fetched list may change only what a channel or the children's tile opens: never which
+     * apps run. Entries without a web address are skipped; an empty list keeps the current one.
+     */
+    private void applyUzak(JSONObject o) throws JSONException {
+        if (o.has("kanallar")) {
+            List<Kanal> list = new ArrayList<>();
+            JSONArray arr = o.getJSONArray("kanallar");
+            for (int i = 0; i < arr.length(); i++) {
+                JSONObject k = arr.optJSONObject(i);
+                if (k == null) continue;
+                String ad = k.optString("ad", "").trim(), url = k.optString("url", "").trim();
+                if (ad.isEmpty() || !web(url)) continue;
+                list.add(new Kanal(ad, url));
+            }
+            if (!list.isEmpty()) {
+                kanallar.clear();
+                kanallar.addAll(list);
+            }
+        }
+        JSONObject k = o.optJSONObject("cocuk");
+        if (k != null) {
+            String url = k.optString("url", cocuk.url).trim();
+            if (web(url)) {
+                cocuk = new Link(k.optString("ad", cocuk.ad), k.optString("alt", cocuk.alt), url,
+                        cocuk.paketler, k.optBoolean("canli", cocuk.canli));
+            }
+        }
+    }
+
+    private static boolean web(String url) {
+        return url.startsWith("https://") || url.startsWith("http://");
     }
 
     private void apply(JSONObject o) throws JSONException {
@@ -157,6 +211,7 @@ final class AileAyar {
         }
         if (o.has("surfshark")) surfshark = strings(o.getJSONArray("surfshark"));
         player = o.optString("oynatici", player);
+        uzak = o.optString("uzak", uzak);
     }
 
     private static List<Uygulama> apps(JSONArray arr) throws JSONException {
@@ -177,7 +232,7 @@ final class AileAyar {
         return s;
     }
 
-    private static String read(File f) throws IOException {
+    static String read(File f) throws IOException {
         try (InputStream in = new FileInputStream(f)) {
             byte[] buf = new byte[(int) Math.min(f.length(), 64 * 1024)];
             int n = 0, r;

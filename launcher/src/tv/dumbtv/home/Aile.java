@@ -180,7 +180,11 @@ final class Aile {
         LinearLayout s = section("Canlı TV");
         LinearLayout tiles = row();
         tiles.setClipChildren(false);
-        for (int i = 0; i < ayar.kanallar.size() && i < 4; i++) {
+        int n = Math.min(ayar.kanallar.size(), 6);
+        // Four 408 wide tiles fill the 1728 wide column; more share it.
+        float gap = n > 4 ? 24 : 32;
+        float w = n > 4 ? (1728 - gap * (n - 1)) / n : 408;
+        for (int i = 0; i < n; i++) {
             AileAyar.Kanal k = ayar.kanallar.get(i);
             Kart t = new Kart(home, Kart.GLASS, 0, px(24), px(6));
             LinearLayout inner = new LinearLayout(home);
@@ -189,7 +193,7 @@ final class Aile {
             LinearLayout b = Kart.badge(home, t, px(22), px(14), px(6), 0);
             inner.addView(b, new LinearLayout.LayoutParams(WRAP, WRAP));
             inner.addView(new View(home), new LinearLayout.LayoutParams(1, 0, 1));
-            TextView name = text(46, 0xFFFFFFFF, BOLD);
+            TextView name = text(n > 4 ? 42 : 46, 0xFFFFFFFF, BOLD);
             name.setText(k.ad);
             inner.addView(name);
             t.addView(inner, new FrameLayout.LayoutParams(MATCH, MATCH));
@@ -198,7 +202,9 @@ final class Aile {
             t.setOnClickListener(v -> openStream(k));
             glassTiles.add(t);
             if (first == null) first = t;
-            tiles.addView(t, tileParams(408, 230, i));
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(px(w), px(230));
+            if (i > 0) lp.leftMargin = px(gap);
+            tiles.addView(t, lp);
         }
         s.addView(tiles, spaced(16));
         return s;
@@ -396,6 +402,7 @@ final class Aile {
     void resume() {
         tick();
         focusFirst();
+        Uzak.refresh(home, ayar.uzak, this::uzakChanged);
         // The filter is woken on resume and takes a moment to raise its VPN.
         for (long at : new long[] {4000, 10000, 20000}) root.postDelayed(this::checkFilter, at);
     }
@@ -405,6 +412,12 @@ final class Aile {
         boolean lent = Filter.lent(home);
         if (filterPill != null) filterPill.setVisibility(!up && !lent ? View.VISIBLE : View.GONE);
         if (surfPill != null) surfPill.setText(up && lent ? "Surfshark açık" : "Surfshark");
+    }
+
+    /** A new channel list arrived: rebuild, keeping the remote's place on the first channel. */
+    private void uzakChanged() {
+        fill();
+        focusFirst();
     }
 
     void focusFirst() {
@@ -423,6 +436,8 @@ final class Aile {
         if (sky.phase() != before) {
             for (TextView p : pills) paintPill(p, p.isFocused());
         }
+        // A TV left on this screen still picks up a fixed channel (at most every 10 minutes).
+        if (ayar != null) Uzak.refresh(home, ayar.uzak, this::uzakChanged);
         // While Surfshark has the slot, see each minute whether it is done with it.
         if (Filter.lent(home)) Filter.wake(home);
         checkFilter();
