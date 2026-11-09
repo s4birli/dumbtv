@@ -75,9 +75,11 @@ final class AileAyar {
         a.kanallar.add(new Kanal("TRT 1", "https://tv-trt1.medya.trt.com.tr/master.m3u8"));
         a.kanallar.add(new Kanal("Kanal D", "https://demiroren.daioncdn.net/kanald/kanald.m3u8?app=kanald_web&ce=3"));
         a.kanallar.add(new Kanal("ATV", "https://rnttwmjcin.turknet.ercdn.net/lcpmvefbyo/atv/atv_1080p.m3u8"));
-        a.cocuk = new Link("Ms Rachel", "YouTube",
-                "https://www.youtube.com/channel/UCG2CL6EUjG8TVT1Tpl9nJdg",
-                new String[] {"org.smarttube.stable", "org.smarttube.beta", "com.amazon.firetv.youtube"}, false);
+        // The live stream the family watches. A live video's id can change when the stream
+        // restarts: then put the new link in aile.json ("cocuk": {"url": ...}).
+        a.cocuk = new Link("Ms Rachel", "Canlı yayın · YouTube",
+                "https://www.youtube.com/watch?v=jBvzOfT8_44",
+                new String[] {"org.smarttube.stable", "org.smarttube.beta", "com.amazon.firetv.youtube"}, true);
         a.ev.add(new Uygulama("Kameralar", "Blink", new String[] {
             "com.immediasemi.android.blink", "com.immediasemi.blink"}));
         a.ev.add(new Uygulama("Alexa", "Sesli asistan", new String[] {
