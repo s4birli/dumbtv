@@ -6,7 +6,7 @@ This fork replaces dumbtv home's grid with one fixed family screen, built for a 
 The main screen has three big tiles and a row of apps:
 
 - **Canlı TV**: what is on now on the first four channels. It opens the channel list, grouped
-  as Türk kanalları (TRT 1, Kanal D, ATV, Show TV, NOW, TV8), İngiliz kanalları (BBC One South,
+  as Türk kanalları (TRT 1, Kanal D, ATV, Show TV, Star TV, NOW, TV8), İngiliz kanalları (BBC One South,
   BBC Two, Three, Four, News and CBeebies from the BBC's own UK streams; ITV1, Channel 4 and
   Channel 5 in their apps), Çocuk kanalları (CBeebies, CBBC, Tiny Pop, Pop, Moonbug Kids, Mr Bean
   cartoons), Eğlence ve belgesel (Mr Bean, Graham Norton, Hell's Kitchen, Homes Under the Hammer,

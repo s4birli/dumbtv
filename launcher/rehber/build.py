@@ -35,6 +35,17 @@ def key(name):
     return re.sub(r"[^0-9a-zçğıöşü]", "", name.lower())
 
 
+def match(k, guide):
+    """The guide entry a Türksat name belongs to; "Star" also finds "Star TV" and back."""
+    if k in guide:
+        return k
+    if k + "tv" in guide:
+        return k + "tv"
+    if k.endswith("tv") and len(k) > 4 and k[:-2] in guide:
+        return k[:-2]
+    return k
+
+
 def context():
     ctx = ssl.create_default_context()
     try:
@@ -111,7 +122,7 @@ def main():
             continue
         seen = set()
         for ch in data.get("k", []):
-            k = key(ch.get("n", ""))
+            k = match(key(ch.get("n", "")), guide)
             if k in guide and k not in seen:
                 seen.add(k)
                 guide[k] += programmes(ch.get("p", []), d)

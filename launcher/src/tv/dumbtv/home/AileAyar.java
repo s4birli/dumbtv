@@ -154,6 +154,8 @@ final class AileAyar {
                 .logo(wm + "commons/thumb/c/cb/Show_TV_logo.svg/960px-Show_TV_logo.svg.png", false);
         show.rehber = "Show";
         a.kanallar.add(show);
+        // Star TV's own 24-hour YouTube stream, in SmartTube.
+        a.kanallar.add(new Kanal("Star TV", "https://www.youtube.com/watch?v=82O6yOy_XwE").logo("https://yt3.googleusercontent.com/RZMwSCEwuSYV3R0X10cizuB4Pf_FOPPJrI-JnKytQoAe6gdScle1iWxj-5ApcILVT2hFZmCa0w=s240-c-k-c0x00ffffff-no-rj", false));
         a.kanallar.add(new Kanal("NOW", "https://uycyyuuzyh.turknet.ercdn.net/nphindgytw/nowtv/nowtv.m3u8")
                 .logo(wm + "commons/thumb/d/db/NOW_TV_%28Turkey%29_wordmark-red.svg/960px-NOW_TV_%28Turkey%29_wordmark-red.svg.png", false));
         a.kanallar.add(new Kanal("TV8", "https://tv8.daioncdn.net/tv8/tv8.m3u8?app=7ddc255a-ef47-4e81-ab14-c0e5f2949788&ce=3")
