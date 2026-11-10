@@ -39,7 +39,7 @@ def match(k, guide):
     """The guide entry a Türksat name belongs to; "Star" also finds "Star TV" and back."""
     if k in guide:
         return k
-    if k + "tv" in guide:
+    if len(k) > 2 and k + "tv" in guide:
         return k + "tv"
     if k.endswith("tv") and len(k) > 4 and k[:-2] in guide:
         return k[:-2]
