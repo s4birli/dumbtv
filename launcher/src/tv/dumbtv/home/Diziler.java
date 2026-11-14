@@ -28,6 +28,8 @@ final class Diziler {
     private static final String CACHE = "aile-diziler.json";
     private static final String PREFS = "aile_diziler";
     private static final String LAST = "last_try";
+    /** The app version that last fetched: a new version fetches at once, its list may read more. */
+    private static final String VERSION = "version";
     private static final long EVERY = 30 * 60 * 1000L;
 
     static final class Dizi {
@@ -113,9 +115,11 @@ final class Diziler {
         long now = System.currentTimeMillis();
         long last = p.getLong(LAST, 0);
         boolean empty = all(c).isEmpty();
-        if (busy || (now - last >= 0 && now - last < (empty ? 5 * 60 * 1000L : EVERY))) return;
+        int version = versionCode(c);
+        boolean upgraded = p.getInt(VERSION, 0) != version;
+        if (busy || (!upgraded && now - last >= 0 && now - last < (empty ? 5 * 60 * 1000L : EVERY))) return;
         busy = true;
-        p.edit().putLong(LAST, now).apply();
+        p.edit().putLong(LAST, now).putInt(VERSION, version).apply();
         Context app = c.getApplicationContext();
         new Thread(() -> {
             try {
@@ -138,6 +142,15 @@ final class Diziler {
                 busy = false;
             }
         }, "aile-diziler").start();
+    }
+
+    @SuppressWarnings("deprecation")
+    private static int versionCode(Context c) {
+        try {
+            return c.getPackageManager().getPackageInfo(c.getPackageName(), 0).versionCode;
+        } catch (android.content.pm.PackageManager.NameNotFoundException e) {
+            return 0;
+        }
     }
 
     private static String readCache(Context c) {
