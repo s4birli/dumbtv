@@ -1258,9 +1258,10 @@ final class Aile {
         if (detay != null) detay.refresh(now);
     }
 
-    /** A new channel list arrived: rebuild, keeping the remote's place. */
+    /** A new channel list arrived: rebuild, keeping the remote's place; its shows may have changed. */
     private void uzakChanged() {
         rebuild();
+        Diziler.refresh(home, this::dizilerChanged, true);
     }
 
     /** A new film list arrived: the tile's count and, if open, the list itself. */

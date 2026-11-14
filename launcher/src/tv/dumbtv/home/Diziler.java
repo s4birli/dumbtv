@@ -111,15 +111,20 @@ final class Diziler {
     }
 
     static void refresh(Context c, Runnable changed) {
+        refresh(c, changed, false);
+    }
+
+    /** now: fetch at once, as when the family's show list itself changed. */
+    static void refresh(Context c, Runnable changed, boolean now) {
         SharedPreferences p = c.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
-        long now = System.currentTimeMillis();
+        long at = System.currentTimeMillis();
         long last = p.getLong(LAST, 0);
         boolean empty = all(c).isEmpty();
         int version = versionCode(c);
-        boolean upgraded = p.getInt(VERSION, 0) != version;
-        if (busy || (!upgraded && now - last >= 0 && now - last < (empty ? 5 * 60 * 1000L : EVERY))) return;
+        boolean upgraded = now || p.getInt(VERSION, 0) != version;
+        if (busy || (!upgraded && at - last >= 0 && at - last < (empty ? 5 * 60 * 1000L : EVERY))) return;
         busy = true;
-        p.edit().putLong(LAST, now).putInt(VERSION, version).apply();
+        p.edit().putLong(LAST, at).putInt(VERSION, version).apply();
         Context app = c.getApplicationContext();
         new Thread(() -> {
             try {

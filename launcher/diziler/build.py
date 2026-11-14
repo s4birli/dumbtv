@@ -103,14 +103,18 @@ def newest(show, old):
         same = old and old.get("id") == vid and old.get("yayin")
         when, rough = (old["yayin"], bool(old.get("yaklasik"))) if same else (0, False)
         if not same or rough:
+            exact = 0
             try:
                 exact = published(channel_id, vid)
-                if exact:
-                    when, rough = exact, False
-                elif not same:
+            except Exception as ex:  # some channels' feeds answer 404; fall back to the day
+                print(f"{show['ad']}: feed: {ex}", file=sys.stderr)
+            if exact:
+                when, rough = exact, False
+            elif not same:
+                try:
                     when, rough = approximate(show["kaynak"], vid), True
-            except Exception as ex:  # the episode still shows, without its date
-                print(f"{show['ad']}: date: {ex}", file=sys.stderr)
+                except Exception as ex:  # the episode still shows, without its date
+                    print(f"{show['ad']}: date: {ex}", file=sys.stderr)
         number, day = episode(title)
         ep = {"ad": show["ad"], "kanal": show.get("kanal", ""), "id": vid, "baslik": title,
               "bolum": number, "tarih": day, "dk": round(secs / 60), "yayin": when}
