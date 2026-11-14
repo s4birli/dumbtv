@@ -1,0 +1,56 @@
+# Finds the newest full episode of each show on the family screen's "Diziler" list
+# (launcher/diziler/build.py) and publishes aile-diziler.json on the "diziler" branch, which the
+# TV reads every 30 minutes. The schedule runs from the default branch, so this file lives on
+# main as well as on aile. A run that finds nothing new publishes nothing.
+name: aile-diziler
+
+on:
+  schedule:
+    - cron: "7,37 * * * *"
+  push:
+    branches: [aile]
+    paths:
+      - launcher/diziler/**
+      - launcher/aile-kanallar.json
+      - .github/workflows/aile-diziler.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: aile-diziler
+  cancel-in-progress: false
+
+jobs:
+  diziler:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: aile
+      - name: Install yt-dlp
+        run: python3 -m pip install --quiet --upgrade yt-dlp
+      - name: Build the list
+        run: |
+          mkdir -p out
+          curl -fsS https://raw.githubusercontent.com/s4birli/dumbtv/diziler/aile-diziler.json -o old.json || echo '{}' > old.json
+          python3 launcher/diziler/build.py launcher/aile-kanallar.json out/aile-diziler.json old.json
+      - name: Publish on the diziler branch when an episode changed
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 - <<'EOF' && exit 0 || true
+          import json, sys
+          old = json.load(open("old.json")).get("diziler")
+          new = json.load(open("out/aile-diziler.json")).get("diziler")
+          sys.exit(0 if old == new else 1)
+          EOF
+          cd out
+          git init -q -b diziler
+          git config user.name "aile-diziler"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add aile-diziler.json
+          git commit -q -m "Diziler $(date -u +%Y-%m-%dT%H:%MZ)"
+          git push -q -f "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" diziler

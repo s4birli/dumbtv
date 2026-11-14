@@ -53,7 +53,9 @@ final class Aile {
     private final List<Satir> satirlar = new ArrayList<>();
     /** Set by Keeper when HOME was pressed: the next resume goes back to the main screen. */
     static volatile boolean homePressed;
-    static final int ANA = 0, KANALLAR = 1, FILMLER = 2;
+    static final int ANA = 0, KANALLAR = 1, FILMLER = 2, DIZILER = 3;
+    /** The cards on the Diziler and film screens, to put the focus back after a rebuild. */
+    private final List<View> kartlar = new ArrayList<>();
     private int screen = ANA;
     /** The main-screen tile that opened the current list, focused again on Back. */
     private int fromTile = 0;
@@ -100,6 +102,7 @@ final class Aile {
         onAirKanal.clear();
         pills.clear();
         satirlar.clear();
+        kartlar.clear();
         first = null;
         filterPill = null;
         surfPill = null;
@@ -108,7 +111,8 @@ final class Aile {
         liveTile = kidsTile = filmTile = null;
 
         View content = screen == KANALLAR ? kanallarScreen()
-                : screen == FILMLER ? filmlerScreen() : anaScreen();
+                : screen == FILMLER ? filmlerScreen()
+                : screen == DIZILER ? dizilerScreen() : anaScreen();
         root.addView(content, new FrameLayout.LayoutParams(MATCH, MATCH));
         tick();
     }
@@ -167,7 +171,7 @@ final class Aile {
         column.addView(header(), new LinearLayout.LayoutParams(MATCH, px(80)));
 
         LinearLayout hero = row();
-        hero.addView(liveTile(), new LinearLayout.LayoutParams(0, MATCH, 1.55f));
+        hero.addView(ayar.canliTv ? liveTile() : diziTile(), new LinearLayout.LayoutParams(0, MATCH, 1.55f));
         LinearLayout.LayoutParams kl = new LinearLayout.LayoutParams(0, MATCH, 1f);
         kl.leftMargin = px(32);
         hero.addView(kidsTile(), kl);
@@ -835,6 +839,117 @@ final class Aile {
         return new SimpleDateFormat("HH:mm", TR).format(new Date(unixSeconds * 1000));
     }
 
+    // ---- shows -------------------------------------------------------------------------------
+
+    /** "Diziler": the newest episode of four of the family's shows; opens the whole list. */
+    private View diziTile() {
+        Kart t = new Kart(home, Kart.GLASS, 0, px(32), px(6));
+        t.setFocusScale(1.04f);
+        LinearLayout inner = new LinearLayout(home);
+        inner.setOrientation(LinearLayout.VERTICAL);
+        inner.setPadding(px(48), px(44), px(48), px(44));
+        TextView title = text(72, 0xFFFFFFFF, BOLD);
+        title.setText("Diziler");
+        inner.addView(title, new LinearLayout.LayoutParams(WRAP, WRAP));
+        t.setTitle(title);
+        TextView sub = text(28, 0xFFC9CEDA, SEMI);
+        sub.setText("Son bölümler, her yarım saatte yenilenir");
+        LinearLayout.LayoutParams sl = new LinearLayout.LayoutParams(WRAP, WRAP);
+        sl.topMargin = px(14);
+        inner.addView(sub, sl);
+        t.setSub(sub);
+        inner.addView(new View(home), new LinearLayout.LayoutParams(1, 0, 1));
+        List<Diziler.Dizi> shows = Diziler.all(home);
+        if (shows.isEmpty()) {
+            TextView wait = text(28, 0xFFC9CEDA, SEMI);
+            wait.setText("Bölümler yükleniyor…");
+            inner.addView(wait);
+            t.setSub(wait);
+        }
+        for (int n = 0; n < shows.size() && n < 4; n++) {
+            Diziler.Dizi d = shows.get(n);
+            LinearLayout line = row();
+            line.setGravity(Gravity.CENTER_VERTICAL);
+            FrameLayout pic = new FrameLayout(home);
+            pic.setBackground(Ui.round(TONES[n % TONES.length], px(8)));
+            pic.setClipToOutline(true);
+            ImageView img = new ImageView(home);
+            img.setScaleType(ImageView.ScaleType.CENTER_CROP);
+            pic.addView(img, new FrameLayout.LayoutParams(MATCH, MATCH));
+            Resim.load(img, new String[] {d.kapak()}, px(85), px(48), Resim.AY);
+            line.addView(pic, new LinearLayout.LayoutParams(px(85), px(48)));
+            TextView name = text(28, 0xFFFFFFFF, BOLD);
+            name.setText(d.ad);
+            name.setEllipsize(android.text.TextUtils.TruncateAt.END);
+            LinearLayout.LayoutParams nl = new LinearLayout.LayoutParams(0, WRAP, 1);
+            nl.leftMargin = px(18);
+            line.addView(name, nl);
+            t.setTitle(name);
+            TextView ep = text(26, 0xFFC9CEDA, SEMI);
+            ep.setText(d.bolum);
+            LinearLayout.LayoutParams el = new LinearLayout.LayoutParams(WRAP, WRAP);
+            el.leftMargin = px(16);
+            line.addView(ep, el);
+            t.setSub(ep);
+            LinearLayout.LayoutParams ll = new LinearLayout.LayoutParams(MATCH, WRAP);
+            if (n > 0) ll.topMargin = px(14);
+            inner.addView(line, ll);
+        }
+        t.addView(inner, new FrameLayout.LayoutParams(MATCH, MATCH));
+        t.setContentDescription("Diziler");
+        t.setOnClickListener(v -> {
+            fromTile = 0;
+            show(DIZILER);
+        });
+        glassTiles.add(t);
+        liveTile = t;
+        first = t;
+        return t;
+    }
+
+    private View dizilerScreen() {
+        LinearLayout column = column(0);
+        column.addView(listHeader("Diziler", null), new LinearLayout.LayoutParams(MATCH, px(80)));
+        List<Diziler.Dizi> shows = Diziler.all(home);
+        if (shows.isEmpty()) {
+            TextView wait = text(36, 0xFFE4E7EE, SEMI);
+            wait.setText("Bölümler yükleniyor…");
+            shadow(wait);
+            column.addView(wait, spaced(80));
+            return column;
+        }
+        ScrollView scroll = new ScrollView(home);
+        scroll.setVerticalScrollBarEnabled(false);
+        scroll.setClipToPadding(false);
+        scroll.setPadding(px(12), px(24), px(12), px(80));
+        LinearLayout grid = new LinearLayout(home);
+        grid.setOrientation(LinearLayout.VERTICAL);
+        grid.setClipChildren(false);
+        scroll.addView(grid, new FrameLayout.LayoutParams(MATCH, WRAP));
+        float cardW = (1704 - 3 * 32) / 4f;
+        LinearLayout line = null;
+        for (int n = 0; n < shows.size(); n++) {
+            if (n % 4 == 0) {
+                line = row();
+                LinearLayout.LayoutParams ll = new LinearLayout.LayoutParams(MATCH, WRAP);
+                if (n > 0) ll.topMargin = px(44);
+                grid.addView(line, ll);
+            }
+            Diziler.Dizi d = shows.get(n);
+            View card = videoCard(d.kapak(), d.sure(), d.ad, d.alt(), n, cardW, 0xFFFFFFFF, 0xFFD7DBE6,
+                    v -> openLink(new AileAyar.Link(d.ad, null, d.link(), AileAyar.YOUTUBE, false)));
+            LinearLayout.LayoutParams cl = new LinearLayout.LayoutParams(px(cardW), WRAP);
+            if (n % 4 > 0) cl.leftMargin = px(32);
+            line.addView(card, cl);
+            kartlar.add(card);
+            if (first == null) first = card;
+        }
+        LinearLayout.LayoutParams sl = new LinearLayout.LayoutParams(MATCH, 0, 1);
+        sl.topMargin = px(16);
+        column.addView(scroll, sl);
+        return column;
+    }
+
     // ---- films -------------------------------------------------------------------------------
 
     private static final int[] TONES = {0xFF4A2A22, 0xFF3D2A3A, 0xFF2E3440, 0xFF4A3A22, 0xFF3A2A1E, 0xFF2F3A2E};
@@ -912,6 +1027,15 @@ final class Aile {
     }
 
     private View filmCard(Filmler.Film f, int index, float w) {
+        View card = videoCard(f.kapak(), f.sure(), f.ad, f.alt, index, w, 0xFFF7EBDD, 0xFFD9C4B0,
+                v -> openLink(new AileAyar.Link(f.ad, null, f.link(), AileAyar.YOUTUBE, false)));
+        kartlar.add(card);
+        return card;
+    }
+
+    /** A YouTube video as a card: its cover with the length on it, a title and a line under it. */
+    private View videoCard(String kapak, String sure, String title, String under, int index, float w,
+            int ink, int subInk, View.OnClickListener click) {
         LinearLayout card = new LinearLayout(home);
         card.setOrientation(LinearLayout.VERTICAL);
         card.setFocusable(true);
@@ -924,9 +1048,9 @@ final class Aile {
         ImageView img = new ImageView(home);
         img.setScaleType(ImageView.ScaleType.CENTER_CROP);
         pic.addView(img, new FrameLayout.LayoutParams(MATCH, MATCH));
-        Resim.load(img, new String[] {f.kapak()}, px(w), px(228), Resim.AY);
+        Resim.load(img, new String[] {kapak}, px(w), px(228), Resim.AY);
         TextView len = text(20, 0xFFFFFFFF, SEMI);
-        len.setText(f.sure());
+        len.setText(sure);
         len.setPadding(px(10), px(4), px(10), px(4));
         len.setBackground(Ui.round(0xB3000000, px(8)));
         FrameLayout.LayoutParams lenl = new FrameLayout.LayoutParams(WRAP, WRAP, Gravity.BOTTOM | Gravity.END);
@@ -936,29 +1060,30 @@ final class Aile {
         ring.setCornerRadius(px(20));
         ring.setStroke(px(6), 0xFFFFFFFF);
         card.addView(pic, new LinearLayout.LayoutParams(MATCH, px(228)));
-        TextView name = text(30, 0xFFF7EBDD, BOLD);
+        TextView name = text(30, ink, BOLD);
         name.setEllipsize(android.text.TextUtils.TruncateAt.END);
-        name.setText(f.ad);
+        name.setText(title);
+        shadow(name);
         LinearLayout.LayoutParams nl = new LinearLayout.LayoutParams(MATCH, WRAP);
         nl.topMargin = px(16);
         nl.leftMargin = px(4);
         card.addView(name, nl);
-        TextView cast = text(22, 0xFFD9C4B0, SEMI);
+        TextView cast = text(22, subInk, SEMI);
         cast.setEllipsize(android.text.TextUtils.TruncateAt.END);
-        cast.setText(f.alt);
+        cast.setText(under);
         LinearLayout.LayoutParams cl = new LinearLayout.LayoutParams(MATCH, WRAP);
         cl.topMargin = px(6);
         cl.leftMargin = px(4);
         card.addView(cast, cl);
-        card.setContentDescription(f.ad + ", " + f.sure());
+        card.setContentDescription(title + ", " + under + ", " + sure);
         card.setOnFocusChangeListener((v, has) -> {
             pic.setForeground(has ? ring : null);
             card.setPivotX(px(w) / 2f);
             card.setPivotY(0);
             card.animate().scaleX(has ? 1.05f : 1f).scaleY(has ? 1.05f : 1f).setDuration(150).start();
-            name.setTextColor(has ? 0xFFFFFFFF : 0xFFF7EBDD);
+            name.setTextColor(has ? 0xFFFFFFFF : ink);
         });
-        card.setOnClickListener(v -> openLink(new AileAyar.Link(f.ad, null, f.link(), AileAyar.YOUTUBE, false)));
+        card.setOnClickListener(click);
         return card;
     }
 
@@ -1094,6 +1219,7 @@ final class Aile {
         Uzak.refresh(home, ayar.uzak, this::uzakChanged);
         Rehber.refresh(home, Rehber.URL, this::showOnAir);
         Filmler.refresh(home, this::filmsChanged);
+        Diziler.refresh(home, this::dizilerChanged);
         // The filter is woken on resume and takes a moment to raise its VPN.
         for (long at : new long[] {4000, 10000, 20000}) root.postDelayed(this::checkFilter, at);
     }
@@ -1124,7 +1250,12 @@ final class Aile {
 
     /** A new film list arrived: the tile's count and, if open, the list itself. */
     private void filmsChanged() {
-        if (screen != KANALLAR) rebuild();
+        if (screen == ANA || screen == FILMLER) rebuild();
+    }
+
+    /** New episodes arrived: the Diziler tile and, if open, the list. */
+    private void dizilerChanged() {
+        if (screen == ANA || screen == DIZILER) rebuild();
     }
 
     /** Builds the screen again and puts the focus back on the same row or tile. */
@@ -1134,9 +1265,11 @@ final class Aile {
         if (screen == KANALLAR) {
             for (int i = 0; i < satirlar.size(); i++) if (satirlar.get(i).kart == f) at = i;
         }
+        int card = kartlar.indexOf(f);
         boolean onFilms = screen == ANA && f != null && f == filmTile;
         fill();
         if (at >= 0 && at < satirlar.size()) satirlar.get(at).kart.requestFocus();
+        else if (card >= 0 && !kartlar.isEmpty()) kartlar.get(Math.min(card, kartlar.size() - 1)).requestFocus();
         else if (onFilms && filmTile != null) filmTile.requestFocus();
         else focusFirst();
     }
@@ -1161,6 +1294,7 @@ final class Aile {
         // A TV left on this screen still picks up a fixed channel (at most every 10 minutes).
         if (ayar != null) Uzak.refresh(home, ayar.uzak, this::uzakChanged);
         Rehber.refresh(home, Rehber.URL, this::showOnAir);
+        Diziler.refresh(home, this::dizilerChanged);
         showOnAir();
         // While Surfshark has the slot, see each minute whether it is done with it.
         if (Filter.lent(home)) Filter.wake(home);

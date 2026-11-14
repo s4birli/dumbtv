@@ -118,6 +118,8 @@ final class AileAyar {
 
     final List<Kanal> kanallar = new ArrayList<>();
     Link cocuk;
+    /** false: the main screen shows "Diziler" where "Canlı TV" was ("canliTv" in the lists). */
+    boolean canliTv = true;
     final List<Uygulama> ev = new ArrayList<>();
     final List<Uygulama> uygulamalar = new ArrayList<>();
     String[] surfshark;
@@ -267,6 +269,7 @@ final class AileAyar {
      * skipped; an empty list keeps the current one.
      */
     private void applyUzak(JSONObject o) throws JSONException {
+        canliTv = o.optBoolean("canliTv", canliTv);
         if (o.has("kanallar")) {
             List<Kanal> list = new ArrayList<>();
             JSONArray arr = o.getJSONArray("kanallar");
@@ -324,6 +327,7 @@ final class AileAyar {
     }
 
     private void apply(JSONObject o) throws JSONException {
+        canliTv = o.optBoolean("canliTv", canliTv);
         if (o.has("kanallar")) {
             kanallar.clear();
             JSONArray arr = o.getJSONArray("kanallar");

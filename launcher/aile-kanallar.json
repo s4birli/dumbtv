@@ -1,5 +1,15 @@
 {
-  "_not": "Aile ekraninin kanal listesi. TV bu dosyayi 10 dakikada bir okur; burada duzeltilen bir yayin adresi TV'ye dokunmadan gecer. grup: listedeki baslik. logoZemin koyu: beyaz logo koyu zeminde. paket/uygulama: kanal o uygulamada acilir, uygulama yuklu degilse listede gorunmez. cocuk.kapak: istege bagli resim adresi; bos ise canli yayinin kendi kapagi.",
+  "_not": "Aile ekraninin kanal listesi. TV bu dosyayi 10 dakikada bir okur; burada duzeltilen bir yayin adresi TV'ye dokunmadan gecer. grup: listedeki baslik. logoZemin koyu: beyaz logo koyu zeminde. paket/uygulama: kanal o uygulamada acilir, uygulama yuklu degilse listede gorunmez. cocuk.kapak: istege bagli resim adresi; bos ise canli yayinin kendi kapagi. canliTv false: Canlı TV kutusu gizlenir, yerine Diziler gelir. diziler: son bölümü gösterilecek dizi ve programlar; kaynak resmi YouTube kanalı (@ad ya da UC ile başlayan kimlik).",
+  "canliTv": false,
+  "diziler": [
+    {"ad": "Kızılcık Şerbeti", "kanal": "Show TV", "kaynak": "@kizilcikserbetidizi"},
+    {"ad": "Haysiyet", "kanal": "Kanal D", "kaynak": "@HaysiyetKANALD"},
+    {"ad": "Müge Anlı ile Tatlı Sert", "kanal": "atv", "kaynak": "UC0XZpoAPTm_1UJvFQiVg_hg"},
+    {"ad": "Esra Erol'da", "kanal": "atv", "kaynak": "UCEZ0DvPX7JE5cglk_V104Bw"},
+    {"ad": "Halef: Köklerin Çağrısı", "kanal": "NOW", "kaynak": "UCsVJDy6KueIEQ89-rQ1PF-w"},
+    {"ad": "Sevdan Bir Ateş", "kanal": "Show TV", "kaynak": "@SevdanBirAtesDizi"},
+    {"ad": "Taşacak Bu Deniz", "kanal": "TRT 1", "kaynak": "@tasacakbudeniztrt"}
+  ],
   "kanallar": [
     {"ad": "TRT 1", "url": "https://tv-trt1.medya.trt.com.tr/master.m3u8", "grup": "Türk kanalları", "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/TRT_1_logo_%282021-%29.svg/960px-TRT_1_logo_%282021-%29.svg.png"},
     {"ad": "Kanal D", "url": "https://demiroren.daioncdn.net/kanald/kanald.m3u8?app=kanald_web&ce=3", "grup": "Türk kanalları", "logo": "https://static.kanald.com.tr/images/kanald-logo-250x60.png", "logoZemin": "koyu"},
