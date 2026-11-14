@@ -921,6 +921,8 @@ final class Aile {
         ScrollView scroll = new ScrollView(home);
         scroll.setVerticalScrollBarEnabled(false);
         scroll.setClipToPadding(false);
+        // A focused card grows past the grid's edge; let it.
+        scroll.setClipChildren(false);
         scroll.setPadding(px(12), px(24), px(12), px(80));
         LinearLayout grid = new LinearLayout(home);
         grid.setOrientation(LinearLayout.VERTICAL);
@@ -1000,6 +1002,8 @@ final class Aile {
         ScrollView scroll = new ScrollView(home);
         scroll.setVerticalScrollBarEnabled(false);
         scroll.setClipToPadding(false);
+        // A focused card grows past the grid's edge; let it.
+        scroll.setClipChildren(false);
         scroll.setPadding(px(12), px(24), px(12), px(80));
         LinearLayout grid = new LinearLayout(home);
         grid.setOrientation(LinearLayout.VERTICAL);
