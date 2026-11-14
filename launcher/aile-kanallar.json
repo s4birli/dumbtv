@@ -12,7 +12,8 @@
     {"ad": "Başkalarının Hayatı", "kanal": "Star TV", "kaynak": "UCBPji4yBwHYvOmJYyXMfThQ"},
     {"ad": "Sevdiğim Sensin", "kanal": "Star TV", "kaynak": "UCX8d_tK-HjGDQkAWUADy9sw"},
     {"ad": "Anne Yarısı", "kanal": "NOW", "kaynak": "UCp3nEM_gpoEY6yhYXPZEIOQ"},
-    {"ad": "Gelin", "kanal": "Kanal 7", "kaynak": "@behindtheveiltvseries"}
+    {"ad": "Gelin", "kanal": "Kanal 7", "kaynak": "@behindtheveiltvseries"},
+    {"ad": "Güller ve Günahlar", "kanal": "Kanal D", "kaynak": "UCalPDcmRPlpaaXgNg8csL5w"}
   ],
   "kanallar": [
     {"ad": "TRT 1", "url": "https://tv-trt1.medya.trt.com.tr/master.m3u8", "grup": "Türk kanalları", "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/TRT_1_logo_%282021-%29.svg/960px-TRT_1_logo_%282021-%29.svg.png"},
