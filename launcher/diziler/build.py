@@ -5,8 +5,9 @@ The shows and their official YouTube channels are listed under "diziler" in
 launcher/aile-kanallar.json. For each channel this reads the newest uploads (a flat
 listing, which YouTube answers without sign-in) and keeps the first one that is a full
 episode: its title names the show, it runs 40 minutes or more, and it is not a trailer,
-summary or compilation. A show that cannot be read this time keeps the episode it had in
-the previous list.
+summary or compilation. When it went up on YouTube comes from the channel's own feed, or,
+for a channel that has put up many clips since, from YouTube's "3 days ago" (day only, marked
+"yaklasik"). A show that cannot be read this time keeps the episode it had in the previous list.
 
 Needs yt-dlp (pip install yt-dlp). Usage: build.py aile-kanallar.json out.json [previous.json]
 """
@@ -14,6 +15,9 @@ import json
 import re
 import sys
 import time
+import urllib.request
+import xml.etree.ElementTree as ET
+from datetime import datetime
 
 from yt_dlp import YoutubeDL
 
@@ -42,25 +46,53 @@ def uploads(source):
             "extractor_args": {"youtube": {"lang": ["tr"]}}}
     with YoutubeDL(opts) as ydl:
         info = ydl.extract_info(channel_url(source), download=False)
-    return info.get("entries") or []
+    return info.get("entries") or [], info.get("channel_id") or ""
+
+
+def approximate(source, video_id):
+    """The day the video went up, from YouTube's "3 days ago" in the untranslated listing; 0 if not there."""
+    opts = {"extract_flat": True, "quiet": True, "no_warnings": True, "playlistend": LOOK,
+            "extractor_args": {"youtubetab": {"approximate_date": [""]}}}
+    with YoutubeDL(opts) as ydl:
+        info = ydl.extract_info(channel_url(source), download=False)
+    for e in info.get("entries") or []:
+        if e.get("id") == video_id:
+            return int(e.get("timestamp") or 0)
+    return 0
+
+
+def published(channel_id, video_id):
+    """When the video went up (unix seconds), from the channel's feed of its 15 newest; 0 if not there."""
+    if not re.fullmatch(r"UC[A-Za-z0-9_-]{22}", channel_id):
+        return 0
+    req = urllib.request.Request(f"https://www.youtube.com/feeds/videos.xml?channel_id={channel_id}",
+                                 headers={"User-Agent": "dumbtv-aile/1.0 (https://github.com/s4birli/dumbtv)"})
+    with urllib.request.urlopen(req, timeout=15) as r:
+        root = ET.fromstring(r.read())
+    ns = {"a": "http://www.w3.org/2005/Atom", "yt": "http://www.youtube.com/xml/schemas/2015"}
+    for e in root.findall("a:entry", ns):
+        if e.findtext("yt:videoId", "", ns) == video_id:
+            return int(datetime.fromisoformat(e.findtext("a:published", "", ns)).timestamp())
+    return 0
 
 
 def episode(title):
-    """'146. Bölüm' or '13 Kasım 2026 Cuma': what the family reads under the show's name."""
+    """('146. Bölüm', '') for a series, ('', '13 Kasım Cuma') for a daily show dated in its title."""
     m = re.search(r"(\d+)\s*\.\s*bölüm", lower(title))
     if m:
-        return f"{m.group(1)}. Bölüm"
+        return f"{m.group(1)}. Bölüm", ""
     m = re.search(r"(\d{1,2} (?:Ocak|Şubat|Mart|Nisan|Mayıs|Haziran|Temmuz|Ağustos|Eylül|Ekim|"
-                  r"Kasım|Aralık) \d{4}(?: (?:Pazartesi|Salı|Çarşamba|Perşembe|Cuma|Cumartesi|"
-                  r"Pazar))?)", title)
+                  r"Kasım|Aralık)) \d{4}( (?:Pazartesi|Salı|Çarşamba|Perşembe|Cuma|Cumartesi|"
+                  r"Pazar))?", title)
     if m:
-        return m.group(1)
-    return ""
+        return "", m.group(1) + (m.group(2) or "")
+    return "", ""
 
 
-def newest(show):
+def newest(show, old):
     name = key(show["ad"])
-    for e in uploads(show["kaynak"]):
+    entries, channel_id = uploads(show["kaynak"])
+    for e in entries:
         title = (e.get("title") or "").strip()
         secs = e.get("duration") or 0
         vid = e.get("id") or ""
@@ -68,8 +100,23 @@ def newest(show):
             continue
         if name not in key(title) or any(w in lower(title) for w in SKIP):
             continue
-        return {"ad": show["ad"], "kanal": show.get("kanal", ""), "id": vid, "baslik": title,
-                "bolum": episode(title), "dk": round(secs / 60)}
+        same = old and old.get("id") == vid and old.get("yayin")
+        when, rough = (old["yayin"], bool(old.get("yaklasik"))) if same else (0, False)
+        if not same or rough:
+            try:
+                exact = published(channel_id, vid)
+                if exact:
+                    when, rough = exact, False
+                elif not same:
+                    when, rough = approximate(show["kaynak"], vid), True
+            except Exception as ex:  # the episode still shows, without its date
+                print(f"{show['ad']}: date: {ex}", file=sys.stderr)
+        number, day = episode(title)
+        ep = {"ad": show["ad"], "kanal": show.get("kanal", ""), "id": vid, "baslik": title,
+              "bolum": number, "tarih": day, "dk": round(secs / 60), "yayin": when}
+        if rough and when:
+            ep["yaklasik"] = True
+        return ep
     return None
 
 
@@ -86,7 +133,7 @@ def main():
     out, found = [], 0
     for show in shows:
         try:
-            ep = newest(show)
+            ep = newest(show, old.get(show["ad"]))
         except Exception as e:  # one channel failing keeps the others
             print(f"{show['ad']}: {e}", file=sys.stderr)
             ep = None

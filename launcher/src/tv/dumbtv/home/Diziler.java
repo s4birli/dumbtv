@@ -31,21 +31,57 @@ final class Diziler {
     private static final long EVERY = 30 * 60 * 1000L;
 
     static final class Dizi {
-        final String ad, kanal, id, bolum;
+        /** bolum: "146. Bölüm" for a series; tarih: "13 Kasım Cuma" for a daily show. */
+        final String ad, kanal, id, bolum, tarih;
         final int dk;
+        /** When it went up on YouTube, unix seconds (0: not known); yaklasik: the day only. */
+        final long yayin;
+        final boolean yaklasik;
 
-        Dizi(String ad, String kanal, String id, String bolum, int dk) {
+        Dizi(String ad, String kanal, String id, String bolum, String tarih, int dk, long yayin,
+                boolean yaklasik) {
             this.ad = ad;
             this.kanal = kanal;
             this.id = id;
             this.bolum = bolum;
+            this.tarih = tarih;
             this.dk = dk;
+            this.yayin = yayin;
+            this.yaklasik = yaklasik;
         }
 
-        /** "146. Bölüm · Show TV". */
+        /** "146. Bölüm · Show TV", or just the channel for a daily show. */
         String alt() {
             if (bolum.isEmpty()) return kanal;
             return kanal.isEmpty() ? bolum : bolum + " · " + kanal;
+        }
+
+        /** What the Diziler tile shows beside the name: the episode, or the day of a daily show. */
+        String kisa() {
+            return !bolum.isEmpty() ? bolum : tarih;
+        }
+
+        /** "Yayın: Dün 21:01", "Yayın: Çarşamba", "Yayın: 13 Kasım Cuma"; empty if not known. */
+        String ne_zaman(long nowMs) {
+            if (!tarih.isEmpty()) return "Yayın: " + tarih;
+            if (yayin <= 0) return "";
+            java.util.Calendar now = java.util.Calendar.getInstance();
+            now.setTimeInMillis(nowMs);
+            java.util.Calendar at = java.util.Calendar.getInstance();
+            at.setTimeInMillis(yayin * 1000);
+            int days = dayNumber(now) - dayNumber(at);
+            java.util.Locale tr = new java.util.Locale("tr", "TR");
+            String day = days <= 0 ? "Bugün" : days == 1 ? "Dün"
+                    : days < 7 ? new java.text.SimpleDateFormat("EEEE", tr).format(at.getTime())
+                    : new java.text.SimpleDateFormat("d MMMM", tr).format(at.getTime());
+            if (!yaklasik && days < 7) {
+                day += " " + new java.text.SimpleDateFormat("HH:mm", tr).format(at.getTime());
+            }
+            return "Yayın: " + day;
+        }
+
+        private static int dayNumber(java.util.Calendar c) {
+            return c.get(java.util.Calendar.YEAR) * 400 + c.get(java.util.Calendar.DAY_OF_YEAR);
         }
 
         String link() {
@@ -125,7 +161,9 @@ final class Diziler {
                 String id = o.optString("id", "");
                 // A YouTube video id: 11 letters, digits, - and _. Anything else is not opened.
                 if (!id.matches("[A-Za-z0-9_-]{11}")) continue;
-                out.add(new Dizi(o.optString("ad", ""), o.optString("kanal", ""), id, o.optString("bolum", ""), o.optInt("dk", 0)));
+                out.add(new Dizi(o.optString("ad", ""), o.optString("kanal", ""), id, o.optString("bolum", ""),
+                        o.optString("tarih", ""), o.optInt("dk", 0), o.optLong("yayin", 0),
+                        o.optBoolean("yaklasik", false)));
             }
         } catch (JSONException e) {
             Keeper.note("diziler bozuk: " + e.getMessage());

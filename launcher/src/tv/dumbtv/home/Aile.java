@@ -886,7 +886,7 @@ final class Aile {
             line.addView(name, nl);
             t.setTitle(name);
             TextView ep = text(26, 0xFFC9CEDA, SEMI);
-            ep.setText(d.bolum);
+            ep.setText(d.kisa());
             LinearLayout.LayoutParams el = new LinearLayout.LayoutParams(WRAP, WRAP);
             el.leftMargin = px(16);
             line.addView(ep, el);
@@ -938,8 +938,8 @@ final class Aile {
                 grid.addView(line, ll);
             }
             Diziler.Dizi d = shows.get(n);
-            View card = videoCard(d.kapak(), d.sure(), d.ad, d.alt(), n, cardW, 0xFFFFFFFF, 0xFFD7DBE6,
-                    v -> openLink(new AileAyar.Link(d.ad, null, d.link(), AileAyar.YOUTUBE, false)));
+            View card = videoCard(d.kapak(), d.sure(), d.ad, d.alt(), d.ne_zaman(System.currentTimeMillis()),
+                    n, cardW, 0xFFFFFFFF, 0xFFD7DBE6, v -> openLink(new AileAyar.Link(d.ad, null, d.link(), AileAyar.YOUTUBE, false)));
             LinearLayout.LayoutParams cl = new LinearLayout.LayoutParams(px(cardW), WRAP);
             if (n % 4 > 0) cl.leftMargin = px(32);
             line.addView(card, cl);
@@ -1031,15 +1031,18 @@ final class Aile {
     }
 
     private View filmCard(Filmler.Film f, int index, float w) {
-        View card = videoCard(f.kapak(), f.sure(), f.ad, f.alt, index, w, 0xFFF7EBDD, 0xFFD9C4B0,
+        View card = videoCard(f.kapak(), f.sure(), f.ad, f.alt, null, index, w, 0xFFF7EBDD, 0xFFD9C4B0,
                 v -> openLink(new AileAyar.Link(f.ad, null, f.link(), AileAyar.YOUTUBE, false)));
         kartlar.add(card);
         return card;
     }
 
-    /** A YouTube video as a card: its cover with the length on it, a title and a line under it. */
-    private View videoCard(String kapak, String sure, String title, String under, int index, float w,
-            int ink, int subInk, View.OnClickListener click) {
+    /**
+     * A YouTube video as a card: its cover with the length on it, a title, a line under it and,
+     * if given, when it went up.
+     */
+    private View videoCard(String kapak, String sure, String title, String under, String when, int index,
+            float w, int ink, int subInk, View.OnClickListener click) {
         LinearLayout card = new LinearLayout(home);
         card.setOrientation(LinearLayout.VERTICAL);
         card.setFocusable(true);
@@ -1079,7 +1082,15 @@ final class Aile {
         cl.topMargin = px(6);
         cl.leftMargin = px(4);
         card.addView(cast, cl);
-        card.setContentDescription(title + ", " + under + ", " + sure);
+        if (when != null && !when.isEmpty()) {
+            TextView at = text(22, subInk, SEMI);
+            at.setText(when);
+            LinearLayout.LayoutParams al = new LinearLayout.LayoutParams(MATCH, WRAP);
+            al.topMargin = px(4);
+            al.leftMargin = px(4);
+            card.addView(at, al);
+        }
+        card.setContentDescription(title + ", " + under + ", " + (when != null ? when + ", " : "") + sure);
         card.setOnFocusChangeListener((v, has) -> {
             pic.setForeground(has ? ring : null);
             card.setPivotX(px(w) / 2f);
